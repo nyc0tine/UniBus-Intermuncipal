@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import 'viewmodels/login_viewmodel.dart';
+import 'views/login_view.dart';
 
 void main() {
-  runApp(const UniBus());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LoginViewModel()),
+      ],
+      child: const UniBus(),
+    ),
+  );
 }
 
 class UniBus extends StatelessWidget {
   const UniBus({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,11 +37,7 @@ class UniBus extends StatelessWidget {
           900: Color(0xFF273088),
         }),
       ),
-      home: const Scaffold(
-        body: Center(
-          child: Text('Welcome to Unibus Intermunicipal!'),
-        ),
-      ),
+      home: const LoginView(),
     );
   }
 }
