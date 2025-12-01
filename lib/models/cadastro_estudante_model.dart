@@ -1,0 +1,1 @@
+//objeto temporário antes de guardar no banco de dados
