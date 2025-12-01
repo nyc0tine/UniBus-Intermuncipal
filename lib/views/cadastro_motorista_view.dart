@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../models/cadastro_motorista_model.dart';
-import '../viewmodels/cadastro_motorista_viewmodel.dart';
-
 class CadastroMotoristaView extends StatefulWidget{
   const CadastroMotoristaView({super.key});
 
@@ -12,13 +9,10 @@ class CadastroMotoristaView extends StatefulWidget{
 
 // Estado da tela de cadastro de motorista
 class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
-  final CadastroMotoristaViewModel _viewModel = CadastroMotoristaViewModel();
-  bool _isLoading = false;
 
 // Controladores para os campos de entrada de texto
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _placaController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
 
@@ -89,12 +83,10 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                   const SizedBox(height: 20),
                   _buildInputField('Email:', _emailController),
                   const SizedBox(height: 20),
-                  _buildInputField('Placa do Ônibus:', _placaController),
-                  const SizedBox(height: 20),
                   _buildInputField('Telefone:', _telefoneController),
                   const SizedBox(height: 20),
                   _buildInputField('Senha:', _senhaController, obscure: true),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
 
                   Center(// Botão de cadastro
                     child: ElevatedButton(
@@ -105,25 +97,16 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                         ),
                         elevation: 5,// Sombra do botão
                       ),
-                      onPressed: _isLoading ? null : _salvarCadastro,// Ação ao pressionar o botão
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text(
-                              'CADASTRAR',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 2,
-                                color: Colors.white,
-                              ),
-                            ),
+                      onPressed: () {},// Ação ao pressionar o botão
+                      child: const Text(
+                        'CADASTRAR',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   )
                 ],
@@ -136,7 +119,7 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
   }
 
   // Método auxiliar para construir campos de entrada de texto
-  Widget _buildInputField(String label, TextEditingController controller, {bool obscure = false}) {// Parâmetro para ocultar o texto da senha
+  Widget _buildInputField(String label, TextEditingController controller, {bool obscure = false}) {// Parâmetro para ocultar o texto (senha)
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       decoration: BoxDecoration(
@@ -164,85 +147,5 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
         ),
       ),
     );
-  }
-
-  // Método para salvar o cadastro do motorista
-  Future<void> _salvarCadastro() async {
-    try {
-      // Criar modelo de cadastro
-      final motorista = CadastroMotoristaModel(
-        nome: _nomeController.text.trim(),
-        email: _emailController.text.trim(),
-        placa: _placaController.text.trim(),
-        telefone: _telefoneController.text.trim(),
-        senha: _senhaController.text,
-      );
-
-      // Validar usando o model
-      if (!motorista.isValid()) {
-        // Mostrar o primeiro erro encontrado
-        final erro = motorista.nomeError ??
-            motorista.emailError ??
-            motorista.telefoneError ??
-            motorista.placaError ??
-            motorista.senhaError ??
-            'Dados inválidos';
-        _mostrarMensagem(erro);
-        return;
-      }
-
-      setState(() {
-        _isLoading = true;
-      });
-
-      // Chamar o ViewModel para salvar
-      final sucesso = await _viewModel.cadastrarMotorista(motorista);
-
-      if (sucesso) {
-        _mostrarMensagem('Cadastro realizado com sucesso!', sucesso: true);
-        // Limpar campos
-        _nomeController.clear();
-        _emailController.clear();
-        _placaController.clear();
-        _telefoneController.clear();
-        _senhaController.clear();
-
-        // Voltar para a tela anterior após 2 segundos
-        await Future.delayed(const Duration(seconds: 2));
-        if (mounted) {
-          Navigator.pop(context);
-        }
-      } else {
-        _mostrarMensagem('Erro ao cadastrar. Verifique seus dados e tente novamente.');
-      }
-    } catch (e) {
-      _mostrarMensagem('Erro: ${e.toString()}');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  // Método para mostrar mensagens ao usuário
-  void _mostrarMensagem(String mensagem, {bool sucesso = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensagem),
-        backgroundColor: sucesso ? Colors.green : Colors.red,
-        duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    // Liberar os controladores quando o widget for destruído
-    _nomeController.dispose();
-    _emailController.dispose();
-    _placaController.dispose();
-    _telefoneController.dispose();
-    _senhaController.dispose();
-    super.dispose();
   }
 }
