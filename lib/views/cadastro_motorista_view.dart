@@ -13,6 +13,7 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
 // Controladores para os campos de entrada de texto
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _universidadeController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
 
@@ -82,6 +83,8 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                   _buildInputField('Nome Completo:', _nomeController),
                   const SizedBox(height: 20),
                   _buildInputField('Email:', _emailController),
+                  const SizedBox(height: 20),
+                  _buildInputField('Universidade:', _universidadeController),
                   const SizedBox(height: 20),
                   _buildInputField('Telefone:', _telefoneController),
                   const SizedBox(height: 20),
