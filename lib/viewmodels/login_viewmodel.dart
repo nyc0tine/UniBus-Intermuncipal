@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginViewModel extends ChangeNotifier {
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
   String tipoUsuario = "estudante";
   String? mensagemErro;
 
@@ -10,18 +13,41 @@ class LoginViewModel extends ChangeNotifier {
   }
 
   Future<bool> login(String email, String senha) async {
-    // Aqui você implementa a lógica real de login (API, Firebase, etc)
+    try {
+      // Validar campos vazios
+      if (email.isEmpty || senha.isEmpty) {
+        mensagemErro = "Preencha todos os campos.";
+        notifyListeners();
+        return false;
+      }
 
-    if (email.isEmpty || senha.isEmpty) {
-      mensagemErro = "Preencha todos os campos.";
-      return false;
-    }
+      // Autenticar com Firebase Auth
+      await _firebaseAuth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: senha,
+      );
 
-    // EXEMPLO de autenticação mock
-    if (email == "teste@teste.com" && senha == "123") {
+      mensagemErro = null;
+      notifyListeners();
       return true;
-    } else {
-      mensagemErro = "Email ou senha incorretos.";
+    } on FirebaseAuthException catch (e) {
+      // Mapear erros do Firebase para mensagens amigáveis
+      if (e.code == 'user-not-found') {
+        mensagemErro = "Usuário não encontrado.";
+      } else if (e.code == 'wrong-password') {
+        mensagemErro = "Senha incorreta.";
+      } else if (e.code == 'invalid-email') {
+        mensagemErro = "Email inválido.";
+      } else if (e.code == 'user-disabled') {
+        mensagemErro = "Usuário desativado.";
+      } else {
+        mensagemErro = "Erro ao fazer login: ${e.message}";
+      }
+      notifyListeners();
+      return false;
+    } catch (e) {
+      mensagemErro = "Erro inesperado: $e";
+      notifyListeners();
       return false;
     }
   }
