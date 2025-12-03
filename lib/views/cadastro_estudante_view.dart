@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:unibus_intermunicipal/models/cadastro_estudante_model.dart';
+import 'package:unibus_intermunicipal/viewmodels/cadastro_estudante_viewmodel.dart';
+import 'package:unibus_intermunicipal/views/login_view.dart';
 
 class CadastroEstudanteView extends StatefulWidget{
   const CadastroEstudanteView({super.key});
@@ -10,12 +13,15 @@ class CadastroEstudanteView extends StatefulWidget{
 // Estado da tela de cadastro de motorista
 class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
 
-// Controladores para os campos de entrada de texto
+  // Controladores para os campos de entrada de texto
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _universidadeController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
+
+  // ViewModel
+  final _viewModel = CadastroEstudanteViewModel();
 
   @override
   Widget build(BuildContext context) {
@@ -91,16 +97,45 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
                   _buildInputField('Senha:', _senhaController, obscure: true),
                   const SizedBox(height: 30),
 
-                  Center(// Botão de cadastro
+                  Center(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4C63B6),
-                        minimumSize: const Size(260, 55),// Tamanho do botão
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),// Bordas arredondadas
-                        ),
-                        elevation: 5,// Sombra do botão
+                        minimumSize: const Size(260, 55),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        elevation: 5,
                       ),
-                      onPressed: () {},// Ação ao pressionar o botão
+                      onPressed: () async {
+                        final estudante = CadastroEstudanteModel(
+                          nome: _nomeController.text.trim(),
+                          email: _emailController.text.trim(),
+                          universidade: _universidadeController.text.trim(),
+                          telefone: _telefoneController.text.trim(),
+                          senha: _senhaController.text,
+                        );
+                        // Exibe loading
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(child: CircularProgressIndicator()),
+                        );
+                        final sucesso = await _viewModel.cadastrarEstudante(estudante);
+                        Navigator.of(context).pop(); // Remove loading
+                        if (sucesso) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Cadastro realizado com sucesso!')),
+                          );
+                          // Volta para página inicial (HomeEstudanteView)
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (_) => const LoginView()),
+                            (route) => false,
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Erro ao cadastrar estudante. Verifique os dados e tente novamente.')),
+                          );
+                        }
+                      },
                       child: const Text(
                         'CADASTRAR',
                         style: TextStyle(

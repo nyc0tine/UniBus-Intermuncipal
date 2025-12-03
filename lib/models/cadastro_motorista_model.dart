@@ -1,14 +1,14 @@
 class CadastroMotoristaModel {
   final String nome;
   final String email;
-  final String placa;
+  final String serie;
   final String telefone;
   final String senha;
 
   CadastroMotoristaModel({
     required this.nome,
     required this.email,
-    required this.placa,
+    required this.serie,
     required this.telefone,
     required this.senha,
   });
@@ -17,7 +17,7 @@ class CadastroMotoristaModel {
   bool isValid() {
     return nome.isNotEmpty &&
         email.isNotEmpty &&
-        placa.isNotEmpty &&
+        serie.isNotEmpty &&
         telefone.isNotEmpty &&
         senha.isNotEmpty &&
         _isValidEmail(email) &&
@@ -42,7 +42,7 @@ class CadastroMotoristaModel {
     return {
       'nome': nome,
       'email': email,
-      'placa': placa,
+      'serie': serie,
       'telefone': telefone,
     
     };
@@ -57,7 +57,7 @@ class CadastroMotoristaModel {
     return CadastroMotoristaModel(
       nome: map['nome'] ?? '',
       email: map['email'] ?? '',
-      placa: map['placa'] ?? '',
+      serie: map['serie'] ?? '',
       telefone: map['telefone'] ?? '',
       senha: '', // senha não está armazenada no Firestore
     );
@@ -91,10 +91,10 @@ class CadastroMotoristaModel {
     return null;
   }
 
-  // Getter para validação individual de placa
+  // Getter para validação individual de serie
   String? get placaError {
-    if (placa.isEmpty) return 'Placa não pode estar vazia';
-    if (placa.length < 5) return 'Placa inválida';
+    if (serie.isEmpty) return 'Placa não pode estar vazia';
+    if (serie.length < 5) return 'Placa inválida';
     return null;
   }
 }

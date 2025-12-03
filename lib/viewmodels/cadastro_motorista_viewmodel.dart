@@ -30,7 +30,7 @@ class CadastroMotoristaViewModel {
       await _firestore.collection('motoristas').doc(userCredential.user!.uid).set({
         'nome': motorista.nome,
         'email': motorista.email,
-        'placa': motorista.placa,
+        'serie': motorista.serie,
         'telefone': motorista.telefone,
         'dataCadastro': DateTime.now(),
       });
