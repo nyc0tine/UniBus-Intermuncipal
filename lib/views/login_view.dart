@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../viewmodels/login_viewmodel.dart';
 import 'selecao_perfil_view.dart';
 import 'home_estudante_view.dart';
@@ -26,12 +25,15 @@ class LoginView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ClipOval(
-                  child: Image.asset(
-                    'assets/LogoBus.png',
-                    height: 110,
-                    width: 110,
-                    fit: BoxFit.cover,
+                Container(
+                  height: 110,
+                  width: 110,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: AssetImage('LogoBus.png'),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
 
