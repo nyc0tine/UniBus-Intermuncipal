@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../models/cadastro_motorista_model.dart';
 
 class CadastroMotoristaViewModel {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -13,7 +12,7 @@ class CadastroMotoristaViewModel {
   String? get ultimoErro => _ultimoErro;
 
   /// Método para salvar cadastro do motorista
-  Future<bool> cadastrarMotorista(CadastroMotoristaModel motorista) async {
+  Future<bool> cadastrarMotorista(motorista) async {
     try {
       // Validar dados
       if (!motorista.isValid()) {
