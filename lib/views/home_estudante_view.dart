@@ -1,272 +1,272 @@
-import 'package:flutter/material.dart';
+  import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../viewmodels/home_estudante_viewmodel.dart';
 
 class HomeEstudanteView extends StatefulWidget {
   const HomeEstudanteView({super.key});
-
+  
   @override
   State<HomeEstudanteView> createState() => _HomeEstudanteViewState();
 }
 
 class _HomeEstudanteViewState extends State<HomeEstudanteView> {
-  final HomeEstudanteViewModel _viewModel = HomeEstudanteViewModel();
-  int _currentIndex = 1;
+  int _selectedIndex = 1; // Home selecionada
+  late HomeEstudanteViewModel vm;
+
+  @override
+  void initState() {
+    super.initState();
+    vm = HomeEstudanteViewModel();
+    vm.init();  // 🔥 Agora só inicializa UMA ve
+  }
+
+
+  // NAVEGAÇÃO INFERIOR
+void _onItemTapped(int index) {
+  // Navegação real
+  if (index == 0) {
+    Navigator.pushNamed(context, '/trajetos');
+  } else if (index == 1) {
+    Navigator.pushNamed(context, '/homeEstudante');
+  } else if (index == 2) {
+    Navigator.pushNamed(context, '/listaEstudantes');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffe9edf5),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        backgroundColor: const Color(0xff4f63c0),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        showUnselectedLabels: true,
-        type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.location_on_outlined),
-            label: "Trajetos",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group),
-            label: "Estudantes",
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 20),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    _cardMeuTransporteHoje(),
-                    const SizedBox(height: 20),
-                    _cardSolicitarAlteracao(),
-                    const SizedBox(height: 20),
-                    _cardAvisosRecentes(),
-                    const SizedBox(height: 30),
-                  ],
-                ),
+    return ChangeNotifierProvider<HomeEstudanteViewModel>(
+      create: (_) => HomeEstudanteViewModel()..init(),
+      child: Consumer<HomeEstudanteViewModel>(
+        builder: (context, vm, _) {
+          return Scaffold(
+            backgroundColor: const Color(0xFFE7ECF2),
+
+            // Header
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.only(top: 60, bottom: 20),
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0xFF445CC4),
+                          Color(0xFF5468D4),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(60),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // TÍTULO
+                        Text(
+                          "Bom Dia, ${vm.estudante?.nome ?? '...'}!",
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        // data
+                        Text(
+                          vm.getDataAtual(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        const Icon(Icons.notifications_none, color: Colors.white, size: 28),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Card Meu Transport de Hoje 
+                  _buildCard(
+                    icon: Icons.directions_bus,
+                    title: "Meu Transporte de Hoje",
+                    content: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(vm.motorista?.nome ?? 'Sem motorista', style: const TextStyle(fontSize: 18)),
+                        const SizedBox(height: 5),
+                        Text('${vm.quantidadePassageiros} passageiros', style: const TextStyle(fontSize: 18)),
+                      ],
+                    ),
+                    button: ElevatedButton(
+                      onPressed: vm.loading
+                          ? null
+                          : () async {
+                              try {
+                                await vm.marcarComoLivre();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Status atualizado!'), backgroundColor: Colors.green),
+                                );
+                              } catch (_) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Erro ao atualizar'), backgroundColor: Colors.red),
+                                );
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF445CC4),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        "Estou Livre!",
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Card Solicitar alteração
+                  _buildCard(
+                    icon: Icons.send,
+                    title: "Solicitar alteração",
+                    content: const Text(
+                      "Mudar status * Ida / Volta",
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    button: ElevatedButton(
+                      onPressed: vm.loading
+                          ? null
+                          : () async {
+                              try {
+                                await vm.solicitarAlteracao(tipo: 'Ida');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Solicitação enviada'), backgroundColor: Colors.green),
+                                );
+                              } catch (_) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Erro ao enviar'), backgroundColor: Colors.red),
+                                );
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF445CC4),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        "Solicitar",
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Card Avisos 
+                  _buildCard(
+                    title: "Avisos recentes",
+                    content: Text(
+                      vm.ultimoAviso.isNotEmpty ? vm.ultimoAviso : 'Nenhum aviso',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+                ],
               ),
             ),
-          ],
-        ),
+
+            // Barra de Navegação Inferior
+            bottomNavigationBar: BottomNavigationBar(
+              backgroundColor: const Color(0xFF445CC4),
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white70,
+              currentIndex: _selectedIndex,
+              onTap: _onItemTapped,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.place),
+                  label: "Trajetos",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home),
+                  label: "Home",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.group),
+                  label: "Estudantes",
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  /// Cabeçalho azul com saudação
-  Widget _buildHeader() {
+  // Widget do Card Reutilizável 
+  Widget _buildCard({
+    IconData? icon,
+    required String title,
+    required Widget content,
+    Widget? button,
+  }) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xff4f63c0),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(60),
-          bottomRight: Radius.circular(60),
-        ),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD9D9D9),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset(2, 4),
+            blurRadius: 8,
+          )
+        ],
       ),
-      padding: const EdgeInsets.fromLTRB(20, 25, 20, 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  "Bom Dia, ${_viewModel.getNomeEstudante()}!",
-                  style: const TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  // TODO: Navegar para notificações
-                },
-                child: const Icon(Icons.notifications_none,
-                    color: Colors.white, size: 28),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          Text(
-            _viewModel.getDataAtual(),
-            style: const TextStyle(
-              fontSize: 18,
-              color: Colors.white,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Card "Meu transporte de hoje"
-  Widget _cardMeuTransporteHoje() {
-    return _baseCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: const [
-              Icon(Icons.directions_bus, size: 28),
-              SizedBox(width: 10),
+              if (icon != null) Icon(icon, size: 28),
+              if (icon != null) const SizedBox(width: 8),
               Text(
-                "Meu Transporte de Hoje",
-                style: TextStyle(
+                title,
+                style: const TextStyle(
                   fontSize: 24,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Text(
-            _viewModel.getNomeMotorista(),
-            style: const TextStyle(fontSize: 20),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Passageiros: ${_viewModel.getQuantidadePassageiros()}",
-            style: const TextStyle(fontSize: 20),
-          ),
-          const SizedBox(height: 25),
 
-          /// Botão "Estou livre!"
-          Center(
-            child: GestureDetector(
-              onTap: () {
-                _viewModel.marcarComoLivre();
-                _mostrarMensagem('Status atualizado!', sucesso: true);
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xff4f63c0),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 14,
-                ),
-                child: const Text(
-                  "Estou Livre!",
-                  style: TextStyle(
-                    fontSize: 22,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+          const SizedBox(height: 16),
 
-  /// Card "Solicitar alteração"
-  Widget _cardSolicitarAlteracao() {
-    return GestureDetector(
-      onTap: () {
-        // TODO: Navegar para tela de alteração
-      },
-      child: _baseCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Row(
-              children: [
-                Icon(Icons.send, size: 28),
-                SizedBox(width: 10),
-                Text(
-                  "Solicitar alteração",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            Text(
-              "Mudar status * Ida / Volta",
-              style: TextStyle(fontSize: 20),
-            ),
+          content,
+
+          if (button != null) ...[
+            const SizedBox(height: 20),
+            button,
           ],
-        ),
-      ),
-    );
-  }
-
-  /// Card "Avisos Recentes"
-  Widget _cardAvisosRecentes() {
-    return _baseCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Avisos recentes",
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            _viewModel.getUltimoAviso(),
-            style: const TextStyle(fontSize: 20),
-          ),
         ],
-      ),
-    );
-  }
-
-  /// Função base para os cards
-  Widget _baseCard({required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: const Color(0xffe2e3e5),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            offset: const Offset(3, 6),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-
-  /// Método para mostrar mensagens ao usuário
-  void _mostrarMensagem(String mensagem, {bool sucesso = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensagem),
-        backgroundColor: sucesso ? Colors.green : Colors.red,
-        duration: const Duration(seconds: 2),
       ),
     );
   }

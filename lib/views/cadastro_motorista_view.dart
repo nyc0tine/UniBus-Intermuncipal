@@ -121,7 +121,7 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
     );
   }
 
-  // Método auxiliar para construir campos de entrada de texto
+// Método auxiliar para construir campos de entrada de texto
   Widget _buildInputField(String label, TextEditingController controller, {bool obscure = false}) {// Parâmetro para ocultar o texto (senha)
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
