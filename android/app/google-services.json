@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "194781732870",
+    "project_id": "unibus-intermunicipal",
+    "storage_bucket": "unibus-intermunicipal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:194781732870:android:281ac5fc1adeb7ab206387",
+        "android_client_info": {
+          "package_name": "com.example.unibus_intermunicipal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA55QO0y4H3hQ1XGfA0lag9uRgln8hU-mQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

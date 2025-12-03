@@ -1,13 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
-  runApp(const UniBus());
+import 'viewmodels/login_viewmodel.dart';
+import 'views/login_view.dart';
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => LoginViewModel()),
+      ],
+      child: const UniBus(),
+    ),
+  );
 }
 
 class UniBus extends StatelessWidget {
   const UniBus({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -27,11 +44,7 @@ class UniBus extends StatelessWidget {
           900: Color(0xFF273088),
         }),
       ),
-      home: const Scaffold(
-        body: Center(
-          child: Text('Welcome to Unibus Intermunicipal!'),
-        ),
-      ),
+      home: const LoginView(),
     );
   }
 }
