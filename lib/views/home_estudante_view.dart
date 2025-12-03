@@ -12,14 +12,6 @@ class HomeEstudanteView extends StatefulWidget {
 
 class _HomeEstudanteViewState extends State<HomeEstudanteView> {
   int _selectedIndex = 1; // Home selecionada
-  late HomeEstudanteViewModel vm;
-
-  @override
-  void initState() {
-    super.initState();
-    vm = HomeEstudanteViewModel();
-    vm.init();  // 🔥 Agora só inicializa UMA ve
-  }
 
 
   // NAVEGAÇÃO INFERIOR
@@ -67,7 +59,7 @@ void _onItemTapped(int index) {
                       children: [
                         // TÍTULO
                         Text(
-                          "Bom Dia, ${vm.estudante?.nome ?? '...'}!",
+                          "Bom Dia, ${vm.estudanteNome.isNotEmpty ? vm.estudanteNome : '...'}!",
                           style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -102,7 +94,7 @@ void _onItemTapped(int index) {
                     content: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(vm.motorista?.nome ?? 'Sem motorista', style: const TextStyle(fontSize: 18)),
+                        Text(vm.motoristaNome.isNotEmpty ? vm.motoristaNome : 'Sem motorista', style: const TextStyle(fontSize: 18)),
                         const SizedBox(height: 5),
                         Text('${vm.quantidadePassageiros} passageiros', style: const TextStyle(fontSize: 18)),
                       ],

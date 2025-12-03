@@ -1,14 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../models/cadastro_estudante_model.dart';
 
 class CadastroEstudanteViewModel {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Método para salvar cadastro do estudante
-  Future<bool> cadastrarEstudante(CadastroEstudanteModel estudante) async {
+  Future<bool> cadastrarEstudante(estudante) async {
     try {
       // Validar dados
       if (!estudante.isValid()) {

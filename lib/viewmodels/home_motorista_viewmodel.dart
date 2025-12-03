@@ -2,8 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../models/motorista_model.dart';
-
 class HomeMotoristaViewModel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -12,7 +10,9 @@ class HomeMotoristaViewModel extends ChangeNotifier {
   String? error;
 
   String? motoristaId;
-  MotoristaModel? motorista;
+  Map<String, dynamic>? motoristaData;
+  String motoristaNome = '';
+  String motoristaContato = '';
 
   DateTime dataSelecionada = DateTime.now();
   List<Map<String, dynamic>> viagensHoje = [];
@@ -57,8 +57,10 @@ class HomeMotoristaViewModel extends ChangeNotifier {
 
       final doc = await _db.collection('motoristas').doc(motoristaId).get();
       if (doc.exists && doc.data() != null) {
-        motorista = MotoristaModel.fromMap(doc.data()!, id: doc.id);
-        veiculo = (doc.data()!['veiculo'] as String?) ?? 'Não especificado';
+        motoristaData = doc.data()!;
+        motoristaNome = (motoristaData!['nome'] as String?) ?? '';
+        motoristaContato = (motoristaData!['contato'] as String?) ?? '';
+        veiculo = (motoristaData!['veiculo'] as String?) ?? 'Não especificado';
       }
     } catch (e) {
       error = e.toString();

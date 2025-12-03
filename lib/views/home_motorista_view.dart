@@ -12,14 +12,7 @@ class HomeMotoristaView extends StatefulWidget {
 
 class _HomeMotoristaViewState extends State<HomeMotoristaView> {
   int _selectedIndex = 1; // Home selecionada
-  late HomeMotoristaViewModel vm;
-
-  @override
-  void initState() {
-    super.initState();
-    vm = HomeMotoristaViewModel();
-    vm.init();
-  }
+  // Removed duplicate declaration of _selectedIndex
 
    @override
   Widget build(BuildContext context) {
@@ -182,7 +175,7 @@ class _HomeMotoristaViewState extends State<HomeMotoristaView> {
           children: [
             Text("Selecionado:\n${vm.veiculo ?? 'Não especificado'}", 
               style: const TextStyle(fontSize: 17)),
-            Text("Placa:\n${vm.motorista?.contato ?? 'N/A'}", 
+            Text("Placa:\n${vm.motoristaContato.isNotEmpty ? vm.motoristaContato : 'N/A'}", 
               style: const TextStyle(fontSize: 17)),
           ],
         )

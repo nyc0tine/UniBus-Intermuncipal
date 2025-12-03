@@ -2,9 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import '../models/estudante_model.dart';
-import '../models/motorista_model.dart';
-
 class HomeEstudanteViewModel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -13,8 +10,12 @@ class HomeEstudanteViewModel extends ChangeNotifier {
   String? error;
 
   String? estudanteId;
-  EstudanteModel? estudante;
-  MotoristaModel? motorista;
+  Map<String, dynamic>? estudanteData;
+  String estudanteNome = '';
+  String? estudanteTrajetoId;
+
+  Map<String, dynamic>? motoristaData;
+  String motoristaNome = '';
 
   int quantidadePassageiros = 0;
   String ultimoAviso = '';
@@ -56,7 +57,9 @@ class HomeEstudanteViewModel extends ChangeNotifier {
 
       final doc = await _db.collection('estudantes').doc(estudanteId).get();
       if (doc.exists && doc.data() != null) {
-        estudante = EstudanteModel.fromMap(doc.data()!, id: doc.id);
+        estudanteData = doc.data()!;
+        estudanteNome = (estudanteData!['nome'] as String?) ?? '';
+        estudanteTrajetoId = (estudanteData!['trajetoId'] as String?) ?? '';
       }
     } catch (e) {
       error = e.toString();
@@ -96,7 +99,8 @@ class HomeEstudanteViewModel extends ChangeNotifier {
         if (motoristaId != null && motoristaId.isNotEmpty) {
           final mDoc = await _db.collection('motoristas').doc(motoristaId).get();
           if (mDoc.exists && mDoc.data() != null) {
-            motorista = MotoristaModel.fromMap(mDoc.data()!, id: mDoc.id);
+            motoristaData = mDoc.data()!;
+            motoristaNome = (motoristaData!['nome'] as String?) ?? '';
           }
         }
       }
@@ -127,7 +131,9 @@ class HomeEstudanteViewModel extends ChangeNotifier {
       notifyListeners();
 
       await _db.collection('estudantes').doc(estudanteId).update({'status': 'livre'});
-      estudante?.status = 'livre';
+      if (estudanteData != null) {
+        estudanteData!['status'] = 'livre';
+      }
       notifyListeners();
     } catch (e) {
       error = e.toString();
