@@ -4,6 +4,7 @@ class CadastroMotoristaModel {
   final String placa;
   final String telefone;
   final String senha;
+  final String? fotoPerfil; // URL opcional da foto de perfil
 
   CadastroMotoristaModel({
     required this.nome,
@@ -11,6 +12,7 @@ class CadastroMotoristaModel {
     required this.placa,
     required this.telefone,
     required this.senha,
+    this.fotoPerfil,
   });
 
   // Método para validar os dados
@@ -44,7 +46,7 @@ class CadastroMotoristaModel {
       'email': email,
       'placa': placa,
       'telefone': telefone,
-    
+      if (fotoPerfil != null) 'fotoPerfil': fotoPerfil,
     };
   }
 
@@ -60,6 +62,7 @@ class CadastroMotoristaModel {
       placa: map['placa'] ?? '',
       telefone: map['telefone'] ?? '',
       senha: '', // senha não está armazenada no Firestore
+      fotoPerfil: map['fotoPerfil'],
     );
   }
 

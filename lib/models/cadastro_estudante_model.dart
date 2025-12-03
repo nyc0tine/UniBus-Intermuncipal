@@ -5,6 +5,7 @@ class CadastroEstudanteModel {
   final String universidade;
   final String telefone;
   final String senha;
+  final String? fotoPerfil;
 
   CadastroEstudanteModel({
     required this.nome,
@@ -12,6 +13,7 @@ class CadastroEstudanteModel {
     required this.universidade,
     required this.telefone,
     required this.senha,
+    this.fotoPerfil,
   });
 
   // Método para validar os dados
@@ -45,7 +47,7 @@ class CadastroEstudanteModel {
       'email': email,
       'universidade': universidade,
       'telefone': telefone,
-    
+      if (fotoPerfil != null) 'fotoPerfil': fotoPerfil,
     };
   }
 
@@ -60,6 +62,7 @@ class CadastroEstudanteModel {
       universidade: map['universidade'] ?? '',
       telefone: map['telefone'] ?? '',
       senha: '', // senha não está armazenada no Firestore
+      fotoPerfil: map['fotoPerfil'],
     );
   }
 

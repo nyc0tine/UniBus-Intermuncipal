@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:unibus_intermunicipal/models/cadastro_estudante_model.dart';
+import 'package:unibus_intermunicipal/viewmodels/cadastro_estudante_viewmodel.dart';
+import 'package:unibus_intermunicipal/views/login_view.dart';
 
 class CadastroEstudanteView extends StatefulWidget{
   const CadastroEstudanteView({super.key});
@@ -7,7 +12,7 @@ class CadastroEstudanteView extends StatefulWidget{
   State<CadastroEstudanteView> createState() => _CadastroEstudanteViewState();
 }
 
-// Estado da tela de cadastro de motorista
+// Estado da tela de cadastro de estudante
 class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
 
 // Controladores para os campos de entrada de texto
@@ -16,6 +21,9 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
   final TextEditingController _universidadeController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
+
+  File? _imagemPerfil;
+  final _viewModel = CadastroEstudanteViewModel();
 
   @override
   Widget build(BuildContext context) {
@@ -62,19 +70,49 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Center(// Ícone de perfil do motorista
-                    child: Container(
-                      height: 120,
-                      width: 120,
-                      padding: const EdgeInsets.all(25),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.black87,
+                  // Seletor/preview de foto do estudante
+                  const SizedBox(height: 20),
+                  Center(
+                    child: GestureDetector(
+                      onTap: _selecionarImagem,
+                      child: Container(
+                        height: 240,
+                        width: 180,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                            color: const Color(0xFF4C63B6),
+                            width: 2,
+                          ),
+                        ),
+                        child: _imagemPerfil == null
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.upload_file,
+                                    size: 60,
+                                    color: const Color(0xFF4C63B6),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Escolher arquivo',
+                                    style: TextStyle(
+                                      color: Colors.black54,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : ClipRRect(
+                                borderRadius: BorderRadius.circular(13),
+                                child: Image.file(
+                                  _imagemPerfil!,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -100,7 +138,59 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
                         ),
                         elevation: 5,// Sombra do botão
                       ),
-                      onPressed: () {},// Ação ao pressionar o botão
+                      onPressed: () async {
+                        final estudante = CadastroEstudanteModel(
+                          nome: _nomeController.text.trim(),
+                          email: _emailController.text.trim(),
+                          universidade: _universidadeController.text.trim(),
+                          telefone: _telefoneController.text.trim(),
+                          senha: _senhaController.text,
+                        );
+                        // Exibe loading
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(child: CircularProgressIndicator()),
+                        );
+                        try {
+                          final sucesso = await _viewModel.cadastrarEstudante(
+                            estudante,
+                            imagemPerfil: _imagemPerfil,
+                          );
+                          Navigator.of(context).pop(); // Remove loading
+                          if (sucesso) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Cadastro realizado com sucesso!')),
+                            );
+                            // Volta para página de login
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (_) => const LoginView()),
+                              (route) => false,
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Erro ao cadastrar estudante. Verifique os dados e tente novamente.')),
+                            );
+                          }
+                        } catch (e, st) {
+                          Navigator.of(context).pop(); // Remove loading se ainda estiver presente
+                          print('Erro inesperado ao cadastrar: $e');
+                          print(st);
+                          await showDialog<void>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Erro inesperado'),
+                              content: Text(e.toString()),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      },
                       child: const Text(
                         'CADASTRAR',
                         style: TextStyle(
@@ -151,4 +241,21 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
       ),
     );
   }
+
+  // Método para selecionar imagem de perfil usando FilePicker
+  Future<void> _selecionarImagem() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false);
+      if (result != null && result.files.isNotEmpty && result.files.first.path != null) {
+        setState(() {
+          _imagemPerfil = File(result.files.first.path!);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao selecionar imagem: $e')),
+      );
+    }
+  }
+
 }

@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:unibus_intermunicipal/models/cadastro_motorista_model.dart';
+import 'package:unibus_intermunicipal/viewmodels/cadastro_motorista_viewmodel.dart';
+import 'package:unibus_intermunicipal/views/login_view.dart';
 
 class CadastroMotoristaView extends StatefulWidget{
   const CadastroMotoristaView({super.key});
@@ -13,9 +18,12 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
 // Controladores para os campos de entrada de texto
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _universidadeController = TextEditingController();
+  final TextEditingController _placaController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
+
+  File? _imagemPerfil;
+  final _viewModel = CadastroMotoristaViewModel();
 
   @override
   Widget build(BuildContext context) {
@@ -62,19 +70,49 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Center(// Ícone de perfil do motorista
-                    child: Container(
-                      height: 120,
-                      width: 120,
-                      padding: const EdgeInsets.all(25),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.black87,
+                  // Seletor/preview de foto do motorista
+                  const SizedBox(height: 20),
+                  Center(
+                    child: GestureDetector(
+                      onTap: _selecionarImagem,
+                      child: Container(
+                        height: 240,
+                        width: 180,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                            color: const Color(0xFF4C63B6),
+                            width: 2,
+                          ),
+                        ),
+                        child: _imagemPerfil == null
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.upload_file,
+                                    size: 60,
+                                    color: const Color(0xFF4C63B6),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text(
+                                    'Escolher arquivo',
+                                    style: TextStyle(
+                                      color: Colors.black54,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : ClipRRect(
+                                borderRadius: BorderRadius.circular(13),
+                                child: Image.file(
+                                  _imagemPerfil!,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -84,7 +122,7 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                   const SizedBox(height: 20),
                   _buildInputField('Email:', _emailController),
                   const SizedBox(height: 20),
-                  _buildInputField('Universidade:', _universidadeController),
+                  _buildInputField('Placa:', _placaController),
                   const SizedBox(height: 20),
                   _buildInputField('Telefone:', _telefoneController),
                   const SizedBox(height: 20),
@@ -100,7 +138,59 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                         ),
                         elevation: 5,// Sombra do botão
                       ),
-                      onPressed: () {},// Ação ao pressionar o botão
+                      onPressed: () async {
+                        final motorista = CadastroMotoristaModel(
+                          nome: _nomeController.text.trim(),
+                          email: _emailController.text.trim(),
+                          placa: _placaController.text.trim(),
+                          telefone: _telefoneController.text.trim(),
+                          senha: _senhaController.text,
+                        );
+                        // Exibe loading
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(child: CircularProgressIndicator()),
+                        );
+                        try {
+                          final sucesso = await _viewModel.cadastrarMotorista(
+                            motorista,
+                            imagemPerfil: _imagemPerfil,
+                          );
+                          Navigator.of(context).pop(); // Remove loading
+                          if (sucesso) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Cadastro realizado com sucesso!')),
+                            );
+                            // Volta para página de login
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(builder: (_) => const LoginView()),
+                              (route) => false,
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Erro ao cadastrar motorista. Verifique os dados e tente novamente.')),
+                            );
+                          }
+                        } catch (e, st) {
+                          Navigator.of(context).pop(); // Remove loading se ainda estiver presente
+                          print('Erro inesperado ao cadastrar: $e');
+                          print(st);
+                          await showDialog<void>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Erro inesperado'),
+                              content: Text(e.toString()),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      },
                       child: const Text(
                         'CADASTRAR',
                         style: TextStyle(
@@ -121,7 +211,7 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
     );
   }
 
-// Método auxiliar para construir campos de entrada de texto
+  // Método auxiliar para construir campos de entrada de texto
   Widget _buildInputField(String label, TextEditingController controller, {bool obscure = false}) {// Parâmetro para ocultar o texto (senha)
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
@@ -151,4 +241,21 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
       ),
     );
   }
+
+  // Método para selecionar imagem de perfil usando FilePicker
+  Future<void> _selecionarImagem() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false);
+      if (result != null && result.files.isNotEmpty && result.files.first.path != null) {
+        setState(() {
+          _imagemPerfil = File(result.files.first.path!);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao selecionar imagem: $e')),
+      );
+    }
+  }
+
 }
