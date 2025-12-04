@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeMotoristaViewModel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -41,12 +42,26 @@ class HomeMotoristaViewModel extends ChangeNotifier {
       return;
     }
 
+    // Carrega nome do SharedPreferences primeiro (mais rápido)
+    await _carregarNomeLocal();
+
     await carregarDadosMotorista();
     await carregarViagensHoje();
     await carregarAvisos();
 
     loading = false;
     notifyListeners();
+  }
+
+  /// Carrega nome do usuário do SharedPreferences
+  Future<void> _carregarNomeLocal() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      motoristaNome = prefs.getString('nomeUsuario') ?? '';
+      notifyListeners();
+    } catch (e) {
+      // Falha silenciosa ao carregar nome local
+    }
   }
 
   Future<void> carregarDadosMotorista() async {
@@ -77,7 +92,11 @@ class HomeMotoristaViewModel extends ChangeNotifier {
       notifyListeners();
 
       final dataBusca = data ?? dataSelecionada;
-      final inicioDia = DateTime(dataBusca.year, dataBusca.month, dataBusca.day);
+      final inicioDia = DateTime(
+        dataBusca.year,
+        dataBusca.month,
+        dataBusca.day,
+      );
       final fimDia = inicioDia.add(const Duration(days: 1));
 
       // Busca trajetos/viagens do motorista para a data selecionada
@@ -162,10 +181,5 @@ class HomeMotoristaViewModel extends ChangeNotifier {
   void recuarData() {
     dataSelecionada = dataSelecionada.subtract(const Duration(days: 1));
     carregarViagensHoje();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }

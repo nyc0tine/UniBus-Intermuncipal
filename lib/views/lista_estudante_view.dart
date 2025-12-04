@@ -4,6 +4,8 @@ import '../viewmodels/lista_estudante_viewmodel.dart';
 import 'perfil_estudante_view.dart';
 
 class ListaEstudanteView extends StatelessWidget {
+  const ListaEstudanteView({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -12,11 +14,13 @@ class ListaEstudanteView extends StatelessWidget {
         length: 4,
         child: Scaffold(
           appBar: AppBar(
-            title: Text("Estudantes"),
+            title: const Text("Estudantes"),
             bottom: TabBar(
               onTap: (index) {
                 final vm = context.read<ListaEstudanteViewModel>();
-                vm.mudarFiltro(vm.instituicoes[index]);
+                // index 0 = "Todos", index 1 = "Uninassau", index 2 = "UFPB", index 3 = "UNIESP"
+                final filtro = vm.instituicoes[index];
+                vm.mudarFiltro(filtro);
               },
               tabs: const [
                 Tab(text: "Todos"),
@@ -26,6 +30,7 @@ class ListaEstudanteView extends StatelessWidget {
               ],
             ),
           ),
+
           body: Consumer<ListaEstudanteViewModel>(
             builder: (context, vm, _) {
               return ListView.builder(
@@ -34,17 +39,14 @@ class ListaEstudanteView extends StatelessWidget {
                   final estudante = vm.estudantesFiltrados[index];
 
                   return ListTile(
-                    leading: CircleAvatar(
-                      child: Text(estudante.nome[0]),
-                    ),
+                    leading: CircleAvatar(child: Text(estudante.nome[0])),
                     title: Text(estudante.nome),
                     subtitle: Text(estudante.instituicao),
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              PerfilEstudanteView(id: estudante.id),
+                          builder: (_) => PerfilEstudanteView(id: estudante.id),
                         ),
                       );
                     },
