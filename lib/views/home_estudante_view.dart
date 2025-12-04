@@ -11,11 +11,8 @@ class HomeEstudanteView extends StatefulWidget {
 }
 
 class _HomeEstudanteViewState extends State<HomeEstudanteView> {
-  int _selectedIndex = 1; // Home selecionada
-
-
   // NAVEGAÇÃO INFERIOR
-void _onItemTapped(int index) {
+  void _onItemTapped(int index) {
   // Navegação real
   if (index == 0) {
     Navigator.pushNamed(context, '/trajetos');
@@ -188,7 +185,7 @@ void _onItemTapped(int index) {
               backgroundColor: const Color(0xFF445CC4),
               selectedItemColor: Colors.white,
               unselectedItemColor: Colors.white70,
-              currentIndex: _selectedIndex,
+              currentIndex: 1,
               onTap: _onItemTapped,
               items: const [
                 BottomNavigationBarItem(

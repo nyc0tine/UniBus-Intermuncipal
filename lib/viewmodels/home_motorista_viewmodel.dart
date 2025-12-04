@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+
 class HomeMotoristaViewModel extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -13,6 +14,7 @@ class HomeMotoristaViewModel extends ChangeNotifier {
   Map<String, dynamic>? motoristaData;
   String motoristaNome = '';
   String motoristaContato = '';
+  String motoristaPlaca = '';
 
   DateTime dataSelecionada = DateTime.now();
   List<Map<String, dynamic>> viagensHoje = [];
@@ -60,6 +62,7 @@ class HomeMotoristaViewModel extends ChangeNotifier {
         motoristaData = doc.data()!;
         motoristaNome = (motoristaData!['nome'] as String?) ?? '';
         motoristaContato = (motoristaData!['contato'] as String?) ?? '';
+        motoristaPlaca = (motoristaData!['placa'] as String?) ?? '';
         veiculo = (motoristaData!['veiculo'] as String?) ?? 'Não especificado';
       }
     } catch (e) {
@@ -90,7 +93,11 @@ class HomeMotoristaViewModel extends ChangeNotifier {
           .orderBy('data')
           .get();
 
-      viagensHoje = viagensSnap.docs.map((doc) => doc.data()).toList();
+      viagensHoje = viagensSnap.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id; // Adiciona o ID do documento
+        return data;
+      }).toList();
 
       // Se houver viagens, busca lista de estudantes dessa viagem
       if (viagensHoje.isNotEmpty) {
