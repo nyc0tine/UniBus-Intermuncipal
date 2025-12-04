@@ -1,8 +1,44 @@
 import 'package:flutter/material.dart';
+
 import 'onibus_cadastro_view.dart';
 
-class OnibusCadastradosView extends StatelessWidget {
-  const OnibusCadastradosView({super.key});
+class OnibusCadastradosView extends StatefulWidget {
+  final List<Map<String, String>>? addedBuses;
+
+  const OnibusCadastradosView({super.key, this.addedBuses});
+
+  @override
+  State<OnibusCadastradosView> createState() => _OnibusCadastradosViewState();
+}
+
+class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
+  String? _selectedPlaca;
+  List<Map<String, String>> _buses = [
+    {
+      'placa': 'EFD5G62',
+      'capacidade': '45 PESSOAS',
+      'tipo': 'ÔNIBUS',
+      'marca': 'Marca A',
+      'numero': '001',
+    },
+    {
+      'placa': 'KTG6C15',
+      'capacidade': '15 PESSOAS',
+      'tipo': 'MICRO-ÔNIBUS',
+      'marca': 'Marca B',
+      'numero': '002',
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    // if the screen was opened with added buses, append them
+    if (widget.addedBuses != null && widget.addedBuses!.isNotEmpty) {
+      _buses.addAll(widget.addedBuses!);
+      _selectedPlaca = widget.addedBuses!.last['placa'];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,10 +48,7 @@ class OnibusCadastradosView extends StatelessWidget {
         backgroundColor: const Color(0xFF445CC4),
         child: const Icon(Icons.add, size: 32),
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const OnibusCadastroView()),
-          );
+          _openCadastro();
         },
       ),
       body: Column(
@@ -31,41 +64,71 @@ class OnibusCadastradosView extends StatelessWidget {
                 bottomRight: Radius.circular(50),
               ),
             ),
-            child: const Column(
+            child: Row(
               children: [
-                Text(
-                  "Ônibus Cadastrados",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                const Expanded(
+                  child: Center(
+                    child: Text(
+                      "Ônibus Cadastrados",
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
+                const SizedBox(width: 48),
               ],
             ),
           ),
 
           const SizedBox(height: 20),
 
-          // LISTA DE ÔNIBUS (mock)
-          _cardOnibus(
-            placa: "EFD5G62",
-            capacidade: "45 PESSOAS",
-            tipo: "ÔNIBUS",
-            selecionado: true,
-          ),
-
-          const SizedBox(height: 20),
-
-          _cardOnibus(
-            placa: "KTG6C15",
-            capacidade: "15 PESSOAS",
-            tipo: "MICRO-ÔNIBUS",
-            selecionado: false,
+          // LISTA DE ÔNIBUS (mock) - toque para selecionar (scrollable)
+          Expanded(
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: _buses.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 0),
+              itemBuilder: (context, index) {
+                final bus = _buses[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedPlaca = bus['placa']),
+                    child: _cardOnibus(
+                      placa: bus['placa'] ?? '',
+                      capacidade: bus['capacidade'] ?? '',
+                      tipo: bus['tipo'] ?? '',
+                      selecionado: _selectedPlaca == bus['placa'],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _openCadastro() async {
+    final result = await Navigator.push<Map<String, String>>(
+      context,
+      MaterialPageRoute(builder: (_) => const OnibusCadastroView()),
+    );
+
+    if (result != null) {
+      setState(() {
+        _buses.add(result);
+        _selectedPlaca = result['placa'];
+      });
+    }
   }
 
   Widget _cardOnibus({
