@@ -1,11 +1,11 @@
-  import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodels/home_estudante_viewmodel.dart';
 
 class HomeEstudanteView extends StatefulWidget {
   const HomeEstudanteView({super.key});
-  
+
   @override
   State<HomeEstudanteView> createState() => _HomeEstudanteViewState();
 }
@@ -13,15 +13,15 @@ class HomeEstudanteView extends StatefulWidget {
 class _HomeEstudanteViewState extends State<HomeEstudanteView> {
   // NAVEGAÇÃO INFERIOR
   void _onItemTapped(int index) {
-  // Navegação real
-  if (index == 0) {
-    Navigator.pushNamed(context, '/trajetos');
-  } else if (index == 1) {
-    Navigator.pushNamed(context, '/homeEstudante');
-  } else if (index == 2) {
-    Navigator.pushNamed(context, '/listaEstudantes');
+    // Navegação real
+    if (index == 0) {
+      Navigator.pushNamed(context, '/trajetosEstudante');
+    } else if (index == 1) {
+      Navigator.pushNamed(context, '/homeEstudante');
+    } else if (index == 2) {
+      Navigator.pushNamed(context, '/listaEstudantes');
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +43,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          Color(0xFF445CC4),
-                          Color(0xFF5468D4),
-                        ],
+                        colors: [Color(0xFF445CC4), Color(0xFF5468D4)],
                       ),
                       borderRadius: BorderRadius.vertical(
                         bottom: Radius.circular(60),
@@ -77,23 +74,35 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
 
                         const SizedBox(height: 10),
 
-                        const Icon(Icons.notifications_none, color: Colors.white, size: 28),
+                        const Icon(
+                          Icons.notifications_none,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ],
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
-                  // Card Meu Transport de Hoje 
+                  // Card Meu Transport de Hoje
                   _buildCard(
                     icon: Icons.directions_bus,
                     title: "Meu Transporte de Hoje",
                     content: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(vm.motoristaNome.isNotEmpty ? vm.motoristaNome : 'Sem motorista', style: const TextStyle(fontSize: 18)),
+                        Text(
+                          vm.motoristaNome.isNotEmpty
+                              ? vm.motoristaNome
+                              : 'Sem motorista',
+                          style: const TextStyle(fontSize: 18),
+                        ),
                         const SizedBox(height: 5),
-                        Text('${vm.quantidadePassageiros} passageiros', style: const TextStyle(fontSize: 18)),
+                        Text(
+                          '${vm.quantidadePassageiros} passageiros',
+                          style: const TextStyle(fontSize: 18),
+                        ),
                       ],
                     ),
                     button: ElevatedButton(
@@ -103,11 +112,17 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
                               try {
                                 await vm.marcarComoLivre();
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Status atualizado!'), backgroundColor: Colors.green),
+                                  const SnackBar(
+                                    content: Text('Status atualizado!'),
+                                    backgroundColor: Colors.green,
+                                  ),
                                 );
                               } catch (_) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Erro ao atualizar'), backgroundColor: Colors.red),
+                                  const SnackBar(
+                                    content: Text('Erro ao atualizar'),
+                                    backgroundColor: Colors.red,
+                                  ),
                                 );
                               }
                             },
@@ -142,11 +157,17 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
                               try {
                                 await vm.solicitarAlteracao(tipo: 'Ida');
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Solicitação enviada'), backgroundColor: Colors.green),
+                                  const SnackBar(
+                                    content: Text('Solicitação enviada'),
+                                    backgroundColor: Colors.green,
+                                  ),
                                 );
                               } catch (_) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Erro ao enviar'), backgroundColor: Colors.red),
+                                  const SnackBar(
+                                    content: Text('Erro ao enviar'),
+                                    backgroundColor: Colors.red,
+                                  ),
                                 );
                               }
                             },
@@ -166,11 +187,13 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
 
                   const SizedBox(height: 20),
 
-                  // Card Avisos 
+                  // Card Avisos
                   _buildCard(
                     title: "Avisos recentes",
                     content: Text(
-                      vm.ultimoAviso.isNotEmpty ? vm.ultimoAviso : 'Nenhum aviso',
+                      vm.ultimoAviso.isNotEmpty
+                          ? vm.ultimoAviso
+                          : 'Nenhum aviso',
                       style: const TextStyle(fontSize: 18),
                     ),
                   ),
@@ -192,10 +215,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
                   icon: Icon(Icons.place),
                   label: "Trajetos",
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home),
-                  label: "Home",
-                ),
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.group),
                   label: "Estudantes",
@@ -208,7 +228,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
     );
   }
 
-  // Widget do Card Reutilizável 
+  // Widget do Card Reutilizável
   Widget _buildCard({
     IconData? icon,
     required String title,
@@ -223,11 +243,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
         color: const Color(0xFFD9D9D9),
         borderRadius: BorderRadius.circular(24),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            offset: Offset(2, 4),
-            blurRadius: 8,
-          )
+          BoxShadow(color: Colors.black26, offset: Offset(2, 4), blurRadius: 8),
         ],
       ),
       child: Column(
@@ -251,10 +267,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
 
           content,
 
-          if (button != null) ...[
-            const SizedBox(height: 20),
-            button,
-          ],
+          if (button != null) ...[const SizedBox(height: 20), button],
         ],
       ),
     );

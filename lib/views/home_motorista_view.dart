@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../viewmodels/home_motorista_viewmodel.dart';
 import "../views/onibus_cadastrados_view.dart";
 
-
 class HomeMotoristaView extends StatefulWidget {
   const HomeMotoristaView({super.key});
 
@@ -168,32 +167,36 @@ class _HomeMotoristaViewState extends State<HomeMotoristaView> {
     );
   }
 
-  // Card Ônibus 
-Widget cardOnibus(HomeMotoristaViewModel vm) {
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const OnibusCadastradosView()),
-      );
-    },
-    child: buildCard(
-      icon: Icons.directions_bus,
-      title: "Ônibus cadastrados",
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text("Selecionado:\n${vm.veiculo ?? 'Não especificado'}",
-              style: const TextStyle(fontSize: 17)),
-            Text("Placa:\n${vm.motoristaPlaca.isNotEmpty ? vm.motoristaPlaca : 'N/A'}",
-              style: const TextStyle(fontSize: 17)),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+  // Card Ônibus
+  Widget cardOnibus(HomeMotoristaViewModel vm) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const OnibusCadastradosView()),
+        );
+      },
+      child: buildCard(
+        icon: Icons.directions_bus,
+        title: "Ônibus cadastrados",
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Selecionado:\n${vm.veiculo ?? 'Não especificado'}",
+                style: const TextStyle(fontSize: 17),
+              ),
+              Text(
+                "Placa:\n${vm.motoristaPlaca.isNotEmpty ? vm.motoristaPlaca : 'N/A'}",
+                style: const TextStyle(fontSize: 17),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   // COMPONENTE REUTILIZÁVEL DE CARD
   Widget buildCard({
@@ -275,7 +278,7 @@ Widget cardOnibus(HomeMotoristaViewModel vm) {
         if (label == 'Estudantes') {
           Navigator.pushNamed(context, '/listaEstudantes');
         } else if (label == 'Trajetos') {
-          Navigator.pushNamed(context, '/trajetos');
+          Navigator.pushNamed(context, '/trjetosMotorista');
         }
       },
       child: Column(
