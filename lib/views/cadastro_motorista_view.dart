@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import '../models/cadastro_motorista_model.dart';
 import '../viewmodels/cadastro_motorista_viewmodel.dart';
+import 'home_motorista_view.dart';
 
 class CadastroMotoristaView extends StatefulWidget{
   const CadastroMotoristaView({super.key});
@@ -17,7 +17,7 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
   // Controladores para os campos de entrada de texto
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _placaController = TextEditingController();
+  final TextEditingController _serieController = TextEditingController();
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
 
@@ -88,7 +88,7 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                   const SizedBox(height: 20),
                   _buildInputField('Email:', _emailController),
                   const SizedBox(height: 20),
-                  _buildInputField('Placa:', _placaController),
+                  _buildInputField('Série:', _serieController),
                   const SizedBox(height: 20),
                   _buildInputField('Telefone:', _telefoneController),
                   const SizedBox(height: 20),
@@ -105,23 +105,44 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                         elevation: 5,// Sombra do botão
                       ),
                         onPressed: () async {
-                          final viewModel = Provider.of<CadastroMotoristaViewModel>(context, listen: false);
+                          // Feedback imediato para confirmar o clique
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Processando cadastro...')),
+                          );
+
+                          final viewModel = CadastroMotoristaViewModel();
                           final motorista = CadastroMotoristaModel(
                             nome: _nomeController.text,
                             email: _emailController.text,
-                            placa: _placaController.text,
+                            serie: _serieController.text,
                             telefone: _telefoneController.text,
                             senha: _senhaController.text,
                           );
-                          bool sucesso = await viewModel.cadastrarMotorista(motorista);
-                          if (sucesso) {
+
+                          // Validação local - mostra o primeiro erro encontrado
+                          final String? validationError = motorista.nomeError ?? motorista.emailError ?? motorista.serieError ?? motorista.telefoneError ?? motorista.senhaError;
+                          if (validationError != null) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Cadastro realizado!')),
+                              SnackBar(content: Text(validationError)),
                             );
-                            // Navigator.pop(context); // Navegar se necessário
-                          } else {
+                            return;
+                          }
+
+                          try {
+                            bool sucesso = await viewModel.cadastrarMotorista(motorista);
+                            if (sucesso) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (_) => const HomeMotoristaView()),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(viewModel.ultimoErro ?? 'Erro ao cadastrar motorista')),
+                              );
+                            }
+                          } catch (e) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(viewModel.ultimoErro ?? 'Erro ao cadastrar motorista')),
+                              SnackBar(content: Text('Erro inesperado: ${e.toString()}')),
                             );
                           }
                         },
