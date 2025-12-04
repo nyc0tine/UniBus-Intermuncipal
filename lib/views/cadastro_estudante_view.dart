@@ -5,17 +5,14 @@ import 'package:unibus_intermunicipal/models/cadastro_estudante_model.dart';
 import 'package:unibus_intermunicipal/viewmodels/cadastro_estudante_viewmodel.dart';
 import 'package:unibus_intermunicipal/views/login_view.dart';
 
-class CadastroEstudanteView extends StatefulWidget{
+class CadastroEstudanteView extends StatefulWidget {
   const CadastroEstudanteView({super.key});
 
   @override
   State<CadastroEstudanteView> createState() => _CadastroEstudanteViewState();
 }
 
-// Estado da tela de cadastro de estudante
 class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
-
-// Controladores para os campos de entrada de texto
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _universidadeController = TextEditingController();
@@ -27,21 +24,21 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(// Estrutura básica da tela
+    return Scaffold(
       backgroundColor: const Color(0xFFE7EBF3),
       body: Column(
         children: [
           Container(
-            width: double.infinity,// Largura total da tela
+            width: double.infinity,
             padding: const EdgeInsets.only(top: 60, bottom: 40),
             decoration: const BoxDecoration(
               color: Color(0xFF4C63B6),
-              borderRadius: BorderRadius.only(// Bordas arredondadas na parte inferior
+              borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(50),
                 bottomRight: Radius.circular(50),
               ),
             ),
-            child: const Center(// Título centralizado
+            child: const Center(
               child: Text(
                 'CADASTRO',
                 style: TextStyle(
@@ -53,14 +50,14 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
               ),
             ),
           ),
-          // Área expansível para o conteúdo do formulário
+
           Expanded(
-            child: SingleChildScrollView(// Permite rolagem se o conteúdo for maior que a tela
+            child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Ícone de voltar
+                  
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: const Icon(
@@ -69,9 +66,10 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
                       size: 30,
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  // Seletor/preview de foto do estudante
-                  const SizedBox(height: 20),
+
+                  const SizedBox(height: 40),
+
+                  // -------------------- FOTO DO ESTUDANTE --------------------
                   Center(
                     child: GestureDetector(
                       onTap: _selecionarImagem,
@@ -89,14 +87,14 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
                         child: _imagemPerfil == null
                             ? Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
+                                children: const [
                                   Icon(
                                     Icons.upload_file,
                                     size: 60,
-                                    color: const Color(0xFF4C63B6),
+                                    color: Color(0xFF4C63B6),
                                   ),
-                                  const SizedBox(height: 8),
-                                  const Text(
+                                  SizedBox(height: 8),
+                                  Text(
                                     'Escolher arquivo',
                                     style: TextStyle(
                                       color: Colors.black54,
@@ -116,81 +114,35 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
                       ),
                     ),
                   ),
+
                   const SizedBox(height: 30),
-                  // Campos de entrada de texto
+
                   _buildInputField('Nome Completo:', _nomeController),
                   const SizedBox(height: 20),
+
                   _buildInputField('Email:', _emailController),
                   const SizedBox(height: 20),
+
                   _buildInputField('Universidade:', _universidadeController),
                   const SizedBox(height: 20),
+
                   _buildInputField('Telefone:', _telefoneController),
                   const SizedBox(height: 20),
+
                   _buildInputField('Senha:', _senhaController, obscure: true),
                   const SizedBox(height: 30),
 
-                  Center(// Botão de cadastro
+                  Center(
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4C63B6),
-                        minimumSize: const Size(260, 55),// Tamanho do botão
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20),// Bordas arredondadas
+                        minimumSize: const Size(260, 55),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        elevation: 5,// Sombra do botão
+                        elevation: 5,
                       ),
-                      onPressed: () async {
-                        final estudante = CadastroEstudanteModel(
-                          nome: _nomeController.text.trim(),
-                          email: _emailController.text.trim(),
-                          universidade: _universidadeController.text.trim(),
-                          telefone: _telefoneController.text.trim(),
-                          senha: _senhaController.text,
-                        );
-                        // Exibe loading
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) => const Center(child: CircularProgressIndicator()),
-                        );
-                        try {
-                          final sucesso = await _viewModel.cadastrarEstudante(
-                            estudante,
-                            imagemPerfil: _imagemPerfil,
-                          );
-                          Navigator.of(context).pop(); // Remove loading
-                          if (sucesso) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Cadastro realizado com sucesso!')),
-                            );
-                            // Volta para página de login
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (_) => const LoginView()),
-                              (route) => false,
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Erro ao cadastrar estudante. Verifique os dados e tente novamente.')),
-                            );
-                          }
-                        } catch (e, st) {
-                          Navigator.of(context).pop(); // Remove loading se ainda estiver presente
-                          print('Erro inesperado ao cadastrar: $e');
-                          print(st);
-                          await showDialog<void>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Erro inesperado'),
-                              content: Text(e.toString()),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      },
+                      onPressed: _cadastrar,
                       child: const Text(
                         'CADASTRAR',
                         style: TextStyle(
@@ -205,20 +157,102 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
                 ],
               ),
             ),
-          ), 
+          ),
         ],
       ),
     );
   }
 
-  // Método auxiliar para construir campos de entrada de texto
-  Widget _buildInputField(String label, TextEditingController controller, {bool obscure = false}) {// Parâmetro para ocultar o texto (senha)
+  // -------------------------- VALIDAÇÕES E ENVIO --------------------------
+  Future<void> _cadastrar() async {
+    final nome = _nomeController.text.trim();
+    final email = _emailController.text.trim();
+    final universidade = _universidadeController.text.trim();
+    final telefone = _telefoneController.text.trim();
+    final senha = _senhaController.text;
+
+    // -------- VALIDAÇÕES IGUAIS AO MOTORISTA --------
+    if (nome.isEmpty ||
+        email.isEmpty ||
+        universidade.isEmpty ||
+        telefone.isEmpty ||
+        senha.isEmpty) {
+      _showMessage('Por favor, preencha todos os campos.');
+      return;
+    }
+
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(email)) {
+      _showMessage('Digite um e-mail válido.');
+      return;
+    }
+
+    if (senha.length < 6) {
+      _showMessage('A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    if (telefone.length < 8) {
+      _showMessage('Digite um telefone válido.');
+      return;
+    }
+
+    if (_imagemPerfil == null) {
+      _showMessage('Selecione uma foto do estudante.');
+      return;
+    }
+
+    final estudante = CadastroEstudanteModel(
+      nome: nome,
+      email: email,
+      universidade: universidade,
+      telefone: telefone,
+      senha: senha,
+    );
+
+    // -------- LOADING --------
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final sucesso = await _viewModel.cadastrarEstudante(
+        estudante,
+        imagemPerfil: _imagemPerfil,
+      );
+
+      Navigator.pop(context);
+
+      if (sucesso) {
+        _showMessage("Cadastro realizado com sucesso!");
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginView()),
+          (route) => false,
+        );
+      } else {
+        _showMessage("Erro ao cadastrar estudante. Tente novamente.");
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      _showMessage("Erro inesperado: $e");
+    }
+  }
+
+  // -------------------------- COMPONENTES --------------------------
+  Widget _buildInputField(
+    String label,
+    TextEditingController controller, {
+    bool obscure = false,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       decoration: BoxDecoration(
-        color: Color(0xFFD9D9D9),
+        color: const Color(0xFFD9D9D9),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: const [// Sombra do contêiner
+        boxShadow: const [
           BoxShadow(
             color: Color(0xFF4C63B6),
             offset: Offset(4, 4),
@@ -226,7 +260,7 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
           ),
         ],
       ),
-      child: TextField(// Campo de entrada de texto
+      child: TextField(
         controller: controller,
         obscureText: obscure,
         decoration: InputDecoration(
@@ -242,20 +276,26 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
     );
   }
 
-  // Método para selecionar imagem de perfil usando FilePicker
+  void _showMessage(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
+  }
+
   Future<void> _selecionarImagem() async {
     try {
-      final result = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false);
-      if (result != null && result.files.isNotEmpty && result.files.first.path != null) {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
         setState(() {
           _imagemPerfil = File(result.files.first.path!);
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao selecionar imagem: $e')),
-      );
+      _showMessage("Erro ao selecionar imagem: $e");
     }
   }
-
 }
