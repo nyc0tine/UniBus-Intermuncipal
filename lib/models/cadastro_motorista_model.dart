@@ -1,7 +1,7 @@
 class CadastroMotoristaModel {
   final String nome;
   final String email;
-  final String serie;
+  final String placa;
   final String telefone;
   final String senha;
   final String? fotoPerfil; // URL opcional da foto de perfil
@@ -9,7 +9,7 @@ class CadastroMotoristaModel {
   CadastroMotoristaModel({
     required this.nome,
     required this.email,
-    required this.serie,
+    required this.placa,
     required this.telefone,
     required this.senha,
     this.fotoPerfil,
@@ -19,7 +19,7 @@ class CadastroMotoristaModel {
   bool isValid() {
     return nome.isNotEmpty &&
         email.isNotEmpty &&
-        serie.isNotEmpty &&
+        placa.isNotEmpty &&
         telefone.isNotEmpty &&
         senha.isNotEmpty &&
         _isValidEmail(email) &&
@@ -44,7 +44,7 @@ class CadastroMotoristaModel {
     return {
       'nome': nome,
       'email': email,
-      'serie': serie,
+      'placa': placa,
       'telefone': telefone,
       if (fotoPerfil != null) 'fotoPerfil': fotoPerfil,
     };
@@ -59,7 +59,7 @@ class CadastroMotoristaModel {
     return CadastroMotoristaModel(
       nome: map['nome'] ?? '',
       email: map['email'] ?? '',
-      serie: map['serie'] ?? '',
+      placa: map['placa'] ?? '',
       telefone: map['telefone'] ?? '',
       senha: '', // senha não está armazenada no Firestore
       fotoPerfil: map['fotoPerfil'],
@@ -95,9 +95,9 @@ class CadastroMotoristaModel {
   }
 
   // Getter para validação individual de série
-  String? get serieError {
-    if (serie.isEmpty) return 'Série não pode estar vazia';
-    if (serie.length < 5) return 'Série inválida';
+  String? get placaError {
+    if (placa.isEmpty) return 'Série não pode estar vazia';
+    if (placa.length < 5) return 'Série inválida';
     return null;
   }
 }
