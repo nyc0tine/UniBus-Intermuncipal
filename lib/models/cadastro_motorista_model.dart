@@ -94,10 +94,10 @@ class CadastroMotoristaModel {
     return null;
   }
 
-  // Getter para validação individual de série
+  // Getter para validação individual de placa
   String? get placaError {
-    if (placa.isEmpty) return 'Série não pode estar vazia';
-    if (placa.length < 5) return 'Série inválida';
+    if (placa.isEmpty) return 'placa não pode estar vazia';
+    if (placa.length < 5) return 'placa inválida';
     return null;
   }
 }

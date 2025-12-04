@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:unibus_intermunicipal/viewmodels/usuario_viewmodel.dart';
 
-class ResetSenhaView extends StatelessWidget{
+class ResetSenhaView extends StatelessWidget {
   const ResetSenhaView({super.key});
 
   @override
@@ -38,9 +37,9 @@ class ResetSenhaView extends StatelessWidget{
               },
               child: Text('Enviar'),
             );
-          }
-        )
+          },
+        ),
       ],
-    ); 
+    );
   }
 }

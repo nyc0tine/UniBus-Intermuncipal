@@ -13,6 +13,8 @@ class CadastroEstudanteView extends StatefulWidget {
 }
 
 class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
+
+  // Controladores para os campos de entrada de texto
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _universidadeController = TextEditingController();
@@ -20,6 +22,7 @@ class _CadastroEstudanteViewState extends State<CadastroEstudanteView> {
   final TextEditingController _senhaController = TextEditingController();
 
   File? _imagemPerfil;
+  // ViewModel
   final _viewModel = CadastroEstudanteViewModel();
 
   @override

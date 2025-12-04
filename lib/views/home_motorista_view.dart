@@ -13,6 +13,8 @@ class HomeMotoristaView extends StatefulWidget {
 }
 
 class _HomeMotoristaViewState extends State<HomeMotoristaView> {
+  int _selectedIndex = 1; // Home selecionada
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<HomeMotoristaViewModel>(
@@ -51,7 +53,7 @@ class _HomeMotoristaViewState extends State<HomeMotoristaView> {
     );
   }
 
-// Header
+  // Header
   Widget buildHeader(HomeMotoristaViewModel vm) {
     return Container(
       width: double.infinity,
@@ -69,9 +71,9 @@ class _HomeMotoristaViewState extends State<HomeMotoristaView> {
       ),
       child: Column(
         children: [
-          const Text(
-            "Bom Dia, Motorista!",
-            style: TextStyle(
+          Text(
+            "Bom Dia, ${vm.motoristaNome.isNotEmpty ? vm.motoristaNome : 'Motorista'}!",
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 28,
               fontWeight: FontWeight.bold,
@@ -105,7 +107,7 @@ class _HomeMotoristaViewState extends State<HomeMotoristaView> {
                 },
               ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -114,8 +116,12 @@ class _HomeMotoristaViewState extends State<HomeMotoristaView> {
   // card Viagens de Hoje
   Widget cardViagensHoje(HomeMotoristaViewModel vm) {
     final viagem = vm.viagensHoje.isNotEmpty ? vm.viagensHoje.first : null;
-    final tipo = viagem != null ? (viagem['tipo'] as String?) ?? 'Viagem' : 'Sem viagem';
-    final passageiros = viagem != null ? (viagem['passageirosCount'] as int?) ?? 0 : 0;
+    final tipo = viagem != null
+        ? (viagem['tipo'] as String?) ?? 'Viagem'
+        : 'Sem viagem';
+    final passageiros = viagem != null
+        ? (viagem['passageirosCount'] as int?) ?? 0
+        : 0;
 
     return buildCard(
       icon: Icons.directions_bus,
@@ -128,20 +134,22 @@ class _HomeMotoristaViewState extends State<HomeMotoristaView> {
     );
   }
 
-  // Card Lista de Passageiros 
+  // Card Lista de Passageiros
   Widget cardListaPassageiros(HomeMotoristaViewModel vm) {
     final contagem = vm.estudantes.length;
     return buildCard(
       icon: Icons.list_alt,
       title: "Lista de passageiros",
       children: [
-        Text("$contagem passageiros registrados",
-            style: const TextStyle(fontSize: 17)),
+        Text(
+          "$contagem passageiros registrados",
+          style: const TextStyle(fontSize: 17),
+        ),
       ],
     );
   }
 
-  // Card Avisos 
+  // Card Avisos
   Widget cardAvisos(HomeMotoristaViewModel vm) {
     final primeiroAviso = vm.avisos.isNotEmpty ? vm.avisos.first : 'Sem avisos';
     return buildCard(
@@ -152,10 +160,7 @@ class _HomeMotoristaViewState extends State<HomeMotoristaView> {
           children: [
             const Text("•  ", style: TextStyle(fontSize: 20)),
             Expanded(
-              child: Text(
-                primeiroAviso,
-                style: const TextStyle(fontSize: 17),
-              ),
+              child: Text(primeiroAviso, style: const TextStyle(fontSize: 17)),
             ),
           ],
         ),
@@ -184,13 +189,13 @@ Widget cardOnibus(HomeMotoristaViewModel vm) {
             Text("Placa:\n${vm.motoristaPlaca.isNotEmpty ? vm.motoristaPlaca : 'N/A'}",
               style: const TextStyle(fontSize: 17)),
           ],
-        )
+        ),
       ],
     ),
   );
 }
 
-  // COMPONENTE REUTILIZÁVEL DE CARD 
+  // COMPONENTE REUTILIZÁVEL DE CARD
   Widget buildCard({
     required IconData icon,
     required String title,
@@ -203,11 +208,7 @@ Widget cardOnibus(HomeMotoristaViewModel vm) {
         color: const Color(0xFFD9D9D9),
         borderRadius: BorderRadius.circular(25),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 6,
-            offset: Offset(2, 4),
-          )
+          BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(2, 4)),
         ],
       ),
       child: Column(
@@ -234,7 +235,7 @@ Widget cardOnibus(HomeMotoristaViewModel vm) {
     );
   }
 
-  // BOTTOM NAVIGATION 
+  // BOTTOM NAVIGATION
   Widget buildBottomNavigation() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
@@ -248,36 +249,54 @@ Widget cardOnibus(HomeMotoristaViewModel vm) {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          navButton(Icons.location_on, "Trajetos", false),
-          navButton(Icons.home, "Home", true),
-          navButton(Icons.people, "Estudantes", false),
+          navButton(Icons.location_on, "Trajetos", _selectedIndex == 0),
+          navButton(Icons.home, "Home", _selectedIndex == 1),
+          navButton(Icons.people, "Estudantes", _selectedIndex == 2),
         ],
       ),
     );
   }
 
   Widget navButton(IconData icon, String label, bool active) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: active ? Colors.white : Colors.transparent,
-            shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: () {
+        // Atualiza estado visual do botão
+        setState(() {
+          if (label == 'Trajetos') {
+            _selectedIndex = 0;
+          } else if (label == 'Home') {
+            _selectedIndex = 1;
+          } else if (label == 'Estudantes') {
+            _selectedIndex = 2;
+          }
+        });
+
+        // Navega para a rota correspondente
+        if (label == 'Estudantes') {
+          Navigator.pushNamed(context, '/listaEstudantes');
+        } else if (label == 'Trajetos') {
+          Navigator.pushNamed(context, '/trajetos');
+        }
+      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: active ? Colors.white : Colors.transparent,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 28,
+              color: active ? const Color(0xFF4F63D2) : Colors.white,
+            ),
           ),
-          child: Icon(
-            icon,
-            size: 28,
-            color: active ? const Color(0xFF4F63D2) : Colors.white,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          label,
-          style: const TextStyle(color: Colors.white),
-        ),
-      ],
+          const SizedBox(height: 5),
+          Text(label, style: const TextStyle(color: Colors.white)),
+        ],
+      ),
     );
   }
 }

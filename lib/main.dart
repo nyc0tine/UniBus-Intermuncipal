@@ -6,6 +6,11 @@ import 'viewmodels/login_viewmodel.dart';
 import 'views/login_view.dart';
 import 'firebase_options.dart';
 
+import 'views/home_estudante_view.dart';
+import 'views/lista_estudante_view.dart';
+import 'views/trajetos_view.dart'; // se existir
+
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -44,6 +49,12 @@ class UniBus extends StatelessWidget {
           900: Color(0xFF273088),
         }),
       ),
+
+      routes: {
+        '/homeEstudante': (context) => const HomeEstudanteView(),
+        '/trajetos': (context) => const TrajetosView(), // coloque sua view real aqui
+        '/listaEstudantes': (context) => const ListaEstudanteView(),
+      },
       home: const LoginView(),
     );
   }
