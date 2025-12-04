@@ -4,6 +4,9 @@ import 'package:file_picker/file_picker.dart';
 import 'package:unibus_intermunicipal/models/cadastro_motorista_model.dart';
 import 'package:unibus_intermunicipal/viewmodels/cadastro_motorista_viewmodel.dart';
 import 'package:unibus_intermunicipal/views/login_view.dart';
+import 'package:provider/provider.dart';
+import '../models/cadastro_motorista_model.dart';
+import '../viewmodels/cadastro_motorista_viewmodel.dart';
 
 class CadastroMotoristaView extends StatefulWidget{
   const CadastroMotoristaView({super.key});
@@ -15,7 +18,7 @@ class CadastroMotoristaView extends StatefulWidget{
 // Estado da tela de cadastro de motorista
 class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
 
-// Controladores para os campos de entrada de texto
+  // Controladores para os campos de entrada de texto
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _placaController = TextEditingController();
@@ -138,59 +141,27 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                         ),
                         elevation: 5,// Sombra do botão
                       ),
-                      onPressed: () async {
-                        final motorista = CadastroMotoristaModel(
-                          nome: _nomeController.text.trim(),
-                          email: _emailController.text.trim(),
-                          placa: _placaController.text.trim(),
-                          telefone: _telefoneController.text.trim(),
-                          senha: _senhaController.text,
-                        );
-                        // Exibe loading
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (context) => const Center(child: CircularProgressIndicator()),
-                        );
-                        try {
-                          final sucesso = await _viewModel.cadastrarMotorista(
-                            motorista,
-                            imagemPerfil: _imagemPerfil,
+                        onPressed: () async {
+                          final viewModel = Provider.of<CadastroMotoristaViewModel>(context, listen: false);
+                          final motorista = CadastroMotoristaModel(
+                            nome: _nomeController.text,
+                            email: _emailController.text,
+                            placa: _placaController.text,
+                            telefone: _telefoneController.text,
+                            senha: _senhaController.text,
                           );
-                          Navigator.of(context).pop(); // Remove loading
+                          bool sucesso = await viewModel.cadastrarMotorista(motorista);
                           if (sucesso) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Cadastro realizado com sucesso!')),
+                              SnackBar(content: Text('Cadastro realizado!')),
                             );
-                            // Volta para página de login
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (_) => const LoginView()),
-                              (route) => false,
-                            );
+                            // Navigator.pop(context); // Navegar se necessário
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Erro ao cadastrar motorista. Verifique os dados e tente novamente.')),
+                              SnackBar(content: Text(viewModel.ultimoErro ?? 'Erro ao cadastrar motorista')),
                             );
                           }
-                        } catch (e, st) {
-                          Navigator.of(context).pop(); // Remove loading se ainda estiver presente
-                          print('Erro inesperado ao cadastrar: $e');
-                          print(st);
-                          await showDialog<void>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Erro inesperado'),
-                              content: Text(e.toString()),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
-                      },
+                        },
                       child: const Text(
                         'CADASTRAR',
                         style: TextStyle(

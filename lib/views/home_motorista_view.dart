@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodels/home_motorista_viewmodel.dart';
+import "../views/onibus_cadastrados_view.dart";
+
 
 class HomeMotoristaView extends StatefulWidget {
   const HomeMotoristaView({super.key});
@@ -11,10 +13,7 @@ class HomeMotoristaView extends StatefulWidget {
 }
 
 class _HomeMotoristaViewState extends State<HomeMotoristaView> {
-  int _selectedIndex = 1; // Home selecionada
-  // Removed duplicate declaration of _selectedIndex
-
-   @override
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<HomeMotoristaViewModel>(
       create: (_) => HomeMotoristaViewModel()..init(),
@@ -165,23 +164,31 @@ class _HomeMotoristaViewState extends State<HomeMotoristaView> {
   }
 
   // Card Ônibus 
-  Widget cardOnibus(HomeMotoristaViewModel vm) {
-    return buildCard(
+Widget cardOnibus(HomeMotoristaViewModel vm) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const OnibusCadastradosView()),
+      );
+    },
+    child: buildCard(
       icon: Icons.directions_bus,
       title: "Ônibus cadastrados",
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Selecionado:\n${vm.veiculo ?? 'Não especificado'}", 
+            Text("Selecionado:\n${vm.veiculo ?? 'Não especificado'}",
               style: const TextStyle(fontSize: 17)),
-            Text("Placa:\n${vm.motoristaContato.isNotEmpty ? vm.motoristaContato : 'N/A'}", 
+            Text("Placa:\n${vm.motoristaPlaca.isNotEmpty ? vm.motoristaPlaca : 'N/A'}",
               style: const TextStyle(fontSize: 17)),
           ],
         )
       ],
-    );
-  }
+    ),
+  );
+}
 
   // COMPONENTE REUTILIZÁVEL DE CARD 
   Widget buildCard({
