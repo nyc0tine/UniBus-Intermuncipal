@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/cadastro_motorista_model.dart';
+import '../models/usuario_model.dart';
 
 class CadastroMotoristaViewModel {
   final _auth = FirebaseAuth.instance;
@@ -17,12 +20,12 @@ class CadastroMotoristaViewModel {
       }
 
       // cria usuário
-      UserCredential cred = await _auth.createUserWithEmailAndPassword(
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: motorista.email,
         password: motorista.senha,
       );
 
-      final uid = cred.user!.uid;
+      final uid = userCredential.user!.uid;
 
       await _firestore.collection("motoristas").doc(uid).set({
         "nome": motorista.nome,
@@ -32,6 +35,15 @@ class CadastroMotoristaViewModel {
         "dataCadastro": DateTime.now(),
       });
 
+      // Salvar mapeamento de tipo de usuário para controle de role
+      await _firestore.collection('usuarios').doc(userCredential.user!.uid).set({
+        'email': motorista.email,
+        'tipo': 'motorista',
+        'dataRegistro': DateTime.now(),
+      });
+
+      ultimoErro = null;
+      print('Motorista cadastrado com sucesso: ${motorista.toMap()}');
       return true;
     } on FirebaseAuthException catch (e) {
       ultimoErro = _traduzErro(e.code);

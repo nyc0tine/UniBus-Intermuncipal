@@ -1,11 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 import 'onibus_cadastro_view.dart';
 
 class OnibusCadastradosView extends StatefulWidget {
-  final List<Map<String, String>>? addedBuses;
-
-  const OnibusCadastradosView({super.key, this.addedBuses});
+  const OnibusCadastradosView({super.key});
 
   @override
   State<OnibusCadastradosView> createState() => _OnibusCadastradosViewState();
@@ -13,32 +12,6 @@ class OnibusCadastradosView extends StatefulWidget {
 
 class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
   String? _selectedPlaca;
-  List<Map<String, String>> _buses = [
-    {
-      'placa': 'EFD5G62',
-      'capacidade': '45 PESSOAS',
-      'tipo': 'ÔNIBUS',
-      'marca': 'Marca A',
-      'numero': '001',
-    },
-    {
-      'placa': 'KTG6C15',
-      'capacidade': '15 PESSOAS',
-      'tipo': 'MICRO-ÔNIBUS',
-      'marca': 'Marca B',
-      'numero': '002',
-    },
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    // if the screen was opened with added buses, append them
-    if (widget.addedBuses != null && widget.addedBuses!.isNotEmpty) {
-      _buses.addAll(widget.addedBuses!);
-      _selectedPlaca = widget.addedBuses!.last['placa'];
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,25 +62,41 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
 
           const SizedBox(height: 20),
 
-          // LISTA DE ÔNIBUS (mock) - toque para selecionar (scrollable)
+          // LISTA DE ÔNIBUS - carregada do Firestore
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemCount: _buses.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 0),
-              itemBuilder: (context, index) {
-                final bus = _buses[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedPlaca = bus['placa']),
-                    child: _cardOnibus(
-                      placa: bus['placa'] ?? '',
-                      capacidade: bus['capacidade'] ?? '',
-                      tipo: bus['tipo'] ?? '',
-                      selecionado: _selectedPlaca == bus['placa'],
-                    ),
-                  ),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('onibus').orderBy('dataCadastro', descending: true).snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('Nenhum ônibus cadastrado'));
+                }
+
+                final docs = snapshot.data!.docs;
+                return ListView.separated(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: docs.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 0),
+                  itemBuilder: (context, index) {
+                    final data = docs[index].data() as Map<String, dynamic>;
+                    final placa = (data['placa'] ?? '') as String;
+                    final capacidade = (data['capacidade'] ?? '') as String;
+                    final tipo = (data['tipo'] ?? '') as String;
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: GestureDetector(
+                        onTap: () => setState(() => _selectedPlaca = placa),
+                        child: _cardOnibus(
+                          placa: placa,
+                          capacidade: capacidade,
+                          tipo: tipo,
+                          selecionado: _selectedPlaca == placa,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -118,17 +107,12 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
   }
 
   Future<void> _openCadastro() async {
-    final result = await Navigator.push<Map<String, String>>(
+    await Navigator.push<Map<String, String>>(
       context,
       MaterialPageRoute(builder: (_) => const OnibusCadastroView()),
     );
-
-    if (result != null) {
-      setState(() {
-        _buses.add(result);
-        _selectedPlaca = result['placa'];
-      });
-    }
+    // The cadastro view now persists directly to Firestore; this view listens
+    // to the Firestore stream and will update automatically.
   }
 
   Widget _cardOnibus({

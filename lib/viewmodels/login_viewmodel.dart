@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginViewModel extends ChangeNotifier {
@@ -30,10 +30,29 @@ class LoginViewModel extends ChangeNotifier {
         password: senha,
       );
 
-      // Salvar dados do usuário localmente após autenticação bem-sucedida
+      // Determinar o tipo real do usuário a partir do Firestore
       final userId = userCred.user?.uid;
+      String tipoReal = tipoUsuario;
       if (userId != null) {
-        await _salvarDadosUsuario(userId, email, tipoUsuario);
+        try {
+          final doc = await _firestore.collection('usuarios').doc(userId).get();
+          if (doc.exists && doc.data() != null && doc.data()!.containsKey('tipo')) {
+            tipoReal = doc.get('tipo') as String;
+          }
+        } catch (e) {
+          // se houver erro ao buscar, mantemos o tipo selecionado
+        }
+
+        // Se o tipo selecionado na UI não corresponde ao tipo real, negar login
+        if (tipoReal != tipoUsuario) {
+          mensagemErro = 'Tipo de usuário inválido para esta conta. Faça login como $tipoReal.';
+          await _firebaseAuth.signOut();
+          notifyListeners();
+          return false;
+        }
+
+        // Salvar dados do usuário localmente usando o tipo real
+        await _salvarDadosUsuario(userId, email, tipoReal);
       }
 
       mensagemErro = null;

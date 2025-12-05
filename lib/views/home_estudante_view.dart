@@ -134,7 +134,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
                         ),
                       ),
                       child: const Text(
-                        "Estou Livre!",
+                        "Em Desenvolvimento",
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
@@ -179,7 +179,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
                         ),
                       ),
                       child: const Text(
-                        "Solicitar",
+                        "Em desenvolvimento",
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),

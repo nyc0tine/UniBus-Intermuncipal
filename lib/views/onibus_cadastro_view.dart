@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import 'onibus_cadastrados_view.dart';
@@ -86,23 +88,26 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
                   return;
                 }
 
-                // Navega para a tela de ônibus cadastrados, passando o novo ônibus
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => OnibusCadastradosView(
-                      addedBuses: [
-                        {
-                          'numero': numero,
-                          'marca': marca,
-                          'placa': placa,
-                          'tipo': tipo,
-                          'capacidade': capacidade,
-                        }
-                      ],
-                    ),
-                  ),
-                );
+                // Persistir ônibus no Firestore e navegar para a tela de ônibus cadastrados
+                final busesColl = FirebaseFirestore.instance.collection('onibus');
+                final currentUser = FirebaseAuth.instance.currentUser;
+
+                busesColl.add({
+                  'numero': numero,
+                  'marca': marca,
+                  'placa': placa,
+                  'tipo': tipo,
+                  'capacidade': capacidade,
+                  'ownerId': currentUser?.uid,
+                  'dataCadastro': DateTime.now(),
+                }).then((_) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const OnibusCadastradosView()),
+                  );
+                }).catchError((e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao salvar ônibus: $e')));
+                });
               },
               child: const Text(
                 "CADASTRAR",
