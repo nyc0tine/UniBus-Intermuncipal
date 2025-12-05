@@ -1,7 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:io';
+
 import '../models/cadastro_motorista_model.dart';
 
 class CadastroMotoristaViewModel {
@@ -42,6 +44,13 @@ class CadastroMotoristaViewModel {
         'telefone': motorista.telefone,
         'dataCadastro': DateTime.now(),
         if (fotoPerfilUrl != null) 'fotoPerfil': fotoPerfilUrl,
+      });
+
+      // Salvar mapeamento de tipo de usuário para controle de role
+      await _firestore.collection('usuarios').doc(userCredential.user!.uid).set({
+        'email': motorista.email,
+        'tipo': 'motorista',
+        'dataRegistro': DateTime.now(),
       });
 
       _ultimoErro = null;
