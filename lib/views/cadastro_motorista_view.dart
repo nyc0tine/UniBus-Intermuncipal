@@ -197,65 +197,67 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
     );
   }
 
-  Future<void> _onCadastrarPressed() async {
-    final nome = _cleanText(_nomeController.text);
-    final email = _cleanText(_emailController.text);
-    final placa = _cleanPlaca(_placaController.text);
-    final telefone = _cleanPhone(_telefoneController.text);
-    final senha = _senhaController.text.trim();
+Future<void> _onCadastrarPressed() async {
+  final nome = _cleanText(_nomeController.text);
+  final email = _cleanText(_emailController.text);
+  final placa = _cleanPlaca(_placaController.text);
+  final telefone = _cleanPhone(_telefoneController.text);
+  final senha = _senhaController.text.trim();
 
-    if (nome.isEmpty ||
-        email.isEmpty ||
-        placa.isEmpty ||
-        telefone.isEmpty ||
-        senha.isEmpty) {
-      _showMessage('Por favor, preencha todos os campos.');
-      return;
-    }
-
-    if (senha.length < 6) {
-      _showMessage('A senha deve ter pelo menos 6 caracteres.');
-      return;
-    }
-
-    if (telefone.length < 10) {
-      _showMessage('Digite um telefone válido.');
-      return;
-    }
-
-    final motorista = CadastroMotoristaModel(
-      nome: nome,
-      email: email,
-      placa: placa,
-      telefone: telefone,
-      senha: senha,
-    );
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      final sucesso = await _viewModel.cadastrarMotorista(motorista);
-
-      Navigator.of(context).pop(); // Fecha loading
-
-      if (sucesso) {
-        _showMessage('Cadastro realizado com sucesso!');
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const LoginView()),
-          (route) => false,
-        );
-      } else {
-        _showMessage(_viewModel.ultimoErro ?? 'Erro ao cadastrar.');
-      }
-    } catch (e) {
-      Navigator.of(context).pop();
-      _showMessage('Erro inesperado: $e');
-    }
+  if (nome.isEmpty ||
+      email.isEmpty ||
+      placa.isEmpty ||
+      telefone.isEmpty ||
+      senha.isEmpty) {
+    _showMessage('Por favor, preencha todos os campos.');
+    return;
   }
+
+  if (senha.length < 6) {
+    _showMessage('A senha deve ter pelo menos 6 caracteres.');
+    return;
+  }
+
+  if (telefone.length < 10) {
+    _showMessage('Digite um telefone válido.');
+    return;
+  }
+
+  final motorista = CadastroMotoristaModel(
+    nome: nome,
+    email: email,
+    placa: placa,
+    telefone: telefone,
+    senha: senha,
+  );
+
+  // ---- ABRE O LOADING ----
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const Center(child: CircularProgressIndicator()),
+  );
+
+  try {
+    final sucesso = await _viewModel.cadastrarMotorista(motorista);
+
+    if (sucesso) {
+      _showMessage('Cadastro realizado com sucesso!');
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginView()),
+        (route) => false,
+      );
+    } else {
+      _showMessage(_viewModel.ultimoErro ?? 'Erro ao cadastrar.');
+    }
+  } catch (e) {
+    _showMessage('Erro inesperado: $e');
+  } finally {
+    // ---- FECHA O LOADING SEMPRE ----
+    Navigator.of(context).pop();
+  }
+}
+
 
   void _showMessage(String text) {
     ScaffoldMessenger.of(context).showSnackBar(

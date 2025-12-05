@@ -2,8 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-import 'onibus_cadastrados_view.dart';
-
 class OnibusCadastroView extends StatefulWidget {
   const OnibusCadastroView({super.key});
 
@@ -15,15 +13,15 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
   final TextEditingController _numeroController = TextEditingController();
   final TextEditingController _marcaController = TextEditingController();
   final TextEditingController _placaController = TextEditingController();
-  final TextEditingController _tipoController = TextEditingController();
   final TextEditingController _capacidadeController = TextEditingController();
+
+  String tipoSelecionado = "Ônibus";
 
   @override
   void dispose() {
     _numeroController.dispose();
     _marcaController.dispose();
     _placaController.dispose();
-    _tipoController.dispose();
     _capacidadeController.dispose();
     super.dispose();
   }
@@ -35,7 +33,6 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // HEADER
             Container(
               padding: const EdgeInsets.only(top: 60, bottom: 30),
               width: double.infinity,
@@ -65,7 +62,29 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
             _input("Número", _numeroController),
             _input("Marca", _marcaController),
             _input("Placa do Ônibus", _placaController),
-            _input("Tipo", _tipoController),
+
+            // DROPDOWN DO TIPO
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD9D9D9),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: DropdownButton<String>(
+                value: tipoSelecionado,
+                items: const [
+                  DropdownMenuItem(value: "Ônibus", child: Text("Ônibus")),
+                  DropdownMenuItem(value: "Micro-ônibus", child: Text("Micro-ônibus")),
+                ],
+                onChanged: (v) {
+                  setState(() => tipoSelecionado = v!);
+                },
+                isExpanded: true,
+                underline: const SizedBox(),
+              ),
+            ),
+
             _input("Capacidade", _capacidadeController),
 
             const SizedBox(height: 30),
@@ -76,23 +95,23 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
                 minimumSize: const Size(250, 55),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               ),
-              onPressed: () {
+              onPressed: () async {
                 final numero = _numeroController.text.trim();
                 final marca = _marcaController.text.trim();
                 final placa = _placaController.text.trim();
-                final tipo = _tipoController.text.trim();
                 final capacidade = _capacidadeController.text.trim();
+                final tipo = tipoSelecionado;
 
                 if (placa.isEmpty || marca.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Preencha pelo menos Marca e Placa')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Preencha Marca e Placa')),
+                  );
                   return;
                 }
 
-                // Persistir ônibus no Firestore e navegar para a tela de ônibus cadastrados
-                final busesColl = FirebaseFirestore.instance.collection('onibus');
                 final currentUser = FirebaseAuth.instance.currentUser;
 
-                busesColl.add({
+                final doc = await FirebaseFirestore.instance.collection('onibus').add({
                   'numero': numero,
                   'marca': marca,
                   'placa': placa,
@@ -100,22 +119,17 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
                   'capacidade': capacidade,
                   'ownerId': currentUser?.uid,
                   'dataCadastro': DateTime.now(),
-                }).then((_) {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const OnibusCadastradosView()),
-                  );
-                }).catchError((e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao salvar ônibus: $e')));
+                });
+
+                Navigator.pop(context, {
+                  "placa": placa,
+                  "tipo": tipo,
+                  "id": doc.id,
                 });
               },
               child: const Text(
                 "CADASTRAR",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
               ),
             ),
 
@@ -136,10 +150,7 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
       ),
       child: TextField(
         controller: controller,
-        decoration: InputDecoration(
-          labelText: label,
-          border: InputBorder.none,
-        ),
+        decoration: InputDecoration(labelText: label, border: InputBorder.none),
       ),
     );
   }

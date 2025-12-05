@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import 'onibus_cadastro_view.dart';
-
 class OnibusCadastradosView extends StatefulWidget {
   const OnibusCadastradosView({super.key});
 
@@ -17,16 +15,8 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFE7ECF2),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF445CC4),
-        child: const Icon(Icons.add, size: 32),
-        onPressed: () {
-          _openCadastro();
-        },
-      ),
       body: Column(
         children: [
-          // HEADER
           Container(
             padding: const EdgeInsets.only(top: 60, bottom: 30),
             width: double.infinity,
@@ -41,17 +31,13 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
               children: [
                 IconButton(
                   icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(context, _selectedPlaca),
                 ),
                 const Expanded(
                   child: Center(
                     child: Text(
                       "Ônibus Cadastrados",
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
                 ),
@@ -62,38 +48,43 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
 
           const SizedBox(height: 20),
 
-          // LISTA DE ÔNIBUS - carregada do Firestore
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('onibus').orderBy('dataCadastro', descending: true).snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection('onibus')
+                  .orderBy('dataCadastro', descending: true)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
+
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                   return const Center(child: Text('Nenhum ônibus cadastrado'));
                 }
 
                 final docs = snapshot.data!.docs;
+
                 return ListView.separated(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: docs.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 0),
                   itemBuilder: (context, index) {
                     final data = docs[index].data() as Map<String, dynamic>;
-                    final placa = (data['placa'] ?? '') as String;
-                    final capacidade = (data['capacidade'] ?? '') as String;
-                    final tipo = (data['tipo'] ?? '') as String;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 20),
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedPlaca = placa),
-                        child: _cardOnibus(
-                          placa: placa,
-                          capacidade: capacidade,
-                          tipo: tipo,
-                          selecionado: _selectedPlaca == placa,
-                        ),
+                    final placa = data['placa'] ?? '';
+                    final tipo = data['tipo'] ?? '';
+                    final capacidade = data['capacidade'] ?? '';
+
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() => _selectedPlaca = placa);
+                        Navigator.pop(context, placa);
+                      },
+                      child: _cardOnibus(
+                        placa: placa,
+                        capacidade: capacidade,
+                        tipo: tipo,
+                        selecionado: _selectedPlaca == placa,
                       ),
                     );
                   },
@@ -106,15 +97,6 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
     );
   }
 
-  Future<void> _openCadastro() async {
-    await Navigator.push<Map<String, String>>(
-      context,
-      MaterialPageRoute(builder: (_) => const OnibusCadastroView()),
-    );
-    // The cadastro view now persists directly to Firestore; this view listens
-    // to the Firestore stream and will update automatically.
-  }
-
   Widget _cardOnibus({
     required String placa,
     required String capacidade,
@@ -122,34 +104,29 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
     required bool selecionado,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: const Color(0xFFD9D9D9),
         borderRadius: BorderRadius.circular(30),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 6,
-            offset: Offset(2, 4),
-          )
+          BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(2, 4)),
         ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             selecionado ? Icons.radio_button_checked : Icons.circle_outlined,
             size: 30,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("PLACA:\n$placa", style: const TextStyle(fontSize: 18)),
-                Text("\nCAPAC.: $capacidade", style: const TextStyle(fontSize: 18)),
-                Text("\nTIPO: $tipo", style: const TextStyle(fontSize: 18)),
+                Text("PLACA: $placa", style: const TextStyle(fontSize: 18)),
+                Text("TIPO: $tipo", style: const TextStyle(fontSize: 18)),
+                Text("CAPACIDADE: $capacidade", style: const TextStyle(fontSize: 18)),
               ],
             ),
           )
