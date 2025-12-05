@@ -8,54 +8,58 @@ class ListaEstudanteView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
+    return ChangeNotifierProvider<ListaEstudanteViewModel>(
       create: (_) => ListaEstudanteViewModel(),
-      child: DefaultTabController(
-        length: 4,
-        child: Scaffold(
-          appBar: AppBar(
-            title: const Text("Estudantes"),
-            bottom: TabBar(
-              onTap: (index) {
-                final vm = context.read<ListaEstudanteViewModel>();
-                // index 0 = "Todos", index 1 = "Uninassau", index 2 = "UFPB", index 3 = "UNIESP"
-                final filtro = vm.instituicoes[index];
-                vm.mudarFiltro(filtro);
-              },
-              tabs: const [
-                Tab(text: "Todos"),
-                Tab(text: "Uninassau"),
-                Tab(text: "UFPB"),
-                Tab(text: "UNIESP"),
-              ],
-            ),
-          ),
+      child: Builder(
+        builder: (context) {
+          return DefaultTabController(
+            length: 4,
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text('Estudantes'),
+                bottom: TabBar(
+                  onTap: (index) {
+                    final vm = context.read<ListaEstudanteViewModel>();
+                    final filtro = vm.instituicoes[index];
+                    vm.mudarFiltro(filtro);
+                  },
+                  tabs: const [
+                    Tab(text: 'Todos'),
+                    Tab(text: 'Uninassau'),
+                    Tab(text: 'UFPB'),
+                    Tab(text: 'UNIESP'),
+                  ],
+                ),
+              ),
 
-          body: Consumer<ListaEstudanteViewModel>(
-            builder: (context, vm, _) {
-              return ListView.builder(
-                itemCount: vm.estudantesFiltrados.length,
-                itemBuilder: (context, index) {
-                  final estudante = vm.estudantesFiltrados[index];
+              body: Consumer<ListaEstudanteViewModel>(
+                builder: (context, vm, _) {
+                  return ListView.builder(
+                    itemCount: vm.estudantesFiltrados.length,
+                    itemBuilder: (context, index) {
+                      final estudante = vm.estudantesFiltrados[index];
 
-                  return ListTile(
-                    leading: CircleAvatar(child: Text(estudante.nome[0])),
-                    title: Text(estudante.nome),
-                    subtitle: Text(estudante.instituicao),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PerfilEstudanteView(id: estudante.id),
-                        ),
+                      return ListTile(
+                        leading: CircleAvatar(child: Text(estudante.nome[0])),
+                        title: Text(estudante.nome),
+                        subtitle: Text(estudante.instituicao),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  PerfilEstudanteView(id: estudante.id),
+                            ),
+                          );
+                        },
                       );
                     },
                   );
                 },
-              );
-            },
-          ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

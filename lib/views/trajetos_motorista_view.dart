@@ -3,14 +3,14 @@ import 'package:provider/provider.dart';
 
 import '../viewmodels/trajetos_viewmodel.dart';
 
-class TrajetosView extends StatefulWidget {
-  const TrajetosView({super.key});
+class TrajetosMotoristaView extends StatefulWidget {
+  const TrajetosMotoristaView({super.key});
 
   @override
-  State<TrajetosView> createState() => _TrajetosViewState();
+  State<TrajetosMotoristaView> createState() => _TrajetosMotoristaViewState();
 }
 
-class _TrajetosViewState extends State<TrajetosView>
+class _TrajetosMotoristaViewState extends State<TrajetosMotoristaView>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -260,7 +260,7 @@ class _TrajetosViewState extends State<TrajetosView>
             // já está na tela trajetos
           }),
           _navButton(Icons.home, 'Home', false, () {
-            Navigator.pushNamed(context, '/homeEstudante');
+            Navigator.pushNamed(context, '/homeMotorista');
           }),
           _navButton(Icons.people, 'Estudantes', false, () {
             Navigator.pushNamed(context, '/listaEstudantes');
