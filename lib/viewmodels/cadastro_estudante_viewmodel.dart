@@ -12,12 +12,13 @@ class CadastroEstudanteViewModel {
 
   Future<bool> cadastrarEstudante(CadastroEstudanteModel estudante) async {
     try {
+      // ---------------- VALIDAR DADOS ----------------
       if (!estudante.isValid()) {
         _ultimoErro = 'Dados inválidos';
         return false;
       }
 
-      // 🔹 Cria usuário no Firebase Auth
+      // ---------------- CRIAR USUÁRIO NO AUTH ----------------
       UserCredential userCredential =
           await _firebaseAuth.createUserWithEmailAndPassword(
         email: estudante.email,
@@ -26,8 +27,8 @@ class CadastroEstudanteViewModel {
 
       final uid = userCredential.user!.uid;
 
-      // 🔹 Dados do Firestore (sem foto!)
-      final data = {
+      // ---------------- DADOS DO ESTUDANTE ----------------
+      final dataEstudante = {
         'nome': estudante.nome,
         'email': estudante.email,
         'universidade': estudante.universidade,
@@ -35,20 +36,30 @@ class CadastroEstudanteViewModel {
         'dataCadastro': DateTime.now(),
       };
 
-      // 🔹 Salva no Firestore
-      await _firestore.collection('estudantes').doc(uid).set(data);
+      // ---------------- SALVAR NA COLEÇÃO "estudantes" ----------------
+      await _firestore.collection('estudantes').doc(uid).set(dataEstudante);
+
+      // ---------------- SALVAR TIPO DE USUÁRIO EM "usuarios" ----------------
+      await _firestore.collection('usuarios').doc(uid).set({
+        'email': estudante.email,
+        'tipo': 'estudante',         // <- IMPORTANTE para regras do Firestore!
+        'dataRegistro': DateTime.now(),
+      });
 
       _ultimoErro = null;
       return true;
+
     } on FirebaseAuthException catch (e) {
       _ultimoErro = _mapearErroFirebaseAuth(e.code);
       return false;
+
     } catch (e) {
       _ultimoErro = 'Erro ao cadastrar estudante.';
       return false;
     }
   }
 
+  // ---------------- MAPEAMENTO DE ERROS DO FIREBASE AUTH ----------------
   String _mapearErroFirebaseAuth(String code) {
     switch (code) {
       case 'weak-password':

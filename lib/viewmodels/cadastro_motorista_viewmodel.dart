@@ -24,6 +24,7 @@ class CadastroMotoristaViewModel {
 
       final uid = cred.user!.uid;
 
+      // 🔹 Salva dados do motorista
       await _firestore.collection("motoristas").doc(uid).set({
         "nome": motorista.nome,
         "email": motorista.email,
@@ -32,7 +33,15 @@ class CadastroMotoristaViewModel {
         "dataCadastro": DateTime.now(),
       });
 
+      // 🔹 **Mapeamento necessário para funcionar com as regras do Firestore**
+      await _firestore.collection("usuarios").doc(uid).set({
+        "email": motorista.email,
+        "tipo": "motorista", // importante!!!
+        "dataRegistro": DateTime.now(),
+      });
+
       return true;
+
     } on FirebaseAuthException catch (e) {
       ultimoErro = _traduzErro(e.code);
       return false;
