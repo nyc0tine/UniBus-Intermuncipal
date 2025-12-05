@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../viewmodels/home_estudante_viewmodel.dart';
+import '../widgets/custom_navbar_estudante.dart';
 
 class HomeEstudanteView extends StatefulWidget {
   const HomeEstudanteView({super.key});
@@ -11,15 +12,18 @@ class HomeEstudanteView extends StatefulWidget {
 }
 
 class _HomeEstudanteViewState extends State<HomeEstudanteView> {
-  // NAVEGAÇÃO INFERIOR
-  void _onItemTapped(int index) {
-    // Navegação real
+
+int _selectedIndex = 1;
+
+  void _onNavTap(int index) {
+    setState(() => _selectedIndex = index);
+
     if (index == 0) {
       Navigator.pushNamed(context, '/trajetosEstudante');
     } else if (index == 1) {
-      Navigator.pushNamed(context, '/homeEstudante');
+      // já está na home
     } else if (index == 2) {
-      Navigator.pushNamed(context, '/listaEstudantes');
+      Navigator.pushNamed(context, '/enquete');
     }
   }
 
@@ -32,10 +36,10 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
           return Scaffold(
             backgroundColor: const Color(0xFFE7ECF2),
 
-            // Header
             body: SingleChildScrollView(
               child: Column(
                 children: [
+                  // HEADER
                   Container(
                     padding: const EdgeInsets.only(top: 60, bottom: 20),
                     width: double.infinity,
@@ -51,7 +55,6 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
                     ),
                     child: Column(
                       children: [
-                        // TÍTULO
                         Text(
                           "Bom Dia, ${vm.estudanteNome.isNotEmpty ? vm.estudanteNome : '...'}!",
                           style: const TextStyle(
@@ -60,10 +63,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
                             color: Colors.white,
                           ),
                         ),
-
                         const SizedBox(height: 10),
-
-                        // data
                         Text(
                           vm.getDataAtual(),
                           style: const TextStyle(
@@ -71,9 +71,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
                             color: Colors.white,
                           ),
                         ),
-
                         const SizedBox(height: 10),
-
                         const Icon(
                           Icons.notifications_none,
                           color: Colors.white,
@@ -85,7 +83,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
 
                   const SizedBox(height: 20),
 
-                  // Card Meu Transport de Hoje
+                  // CARD - MEU TRANSPORTE DE HOJE
                   _buildCard(
                     icon: Icons.directions_bus,
                     title: "Meu Transporte de Hoje",
@@ -128,7 +126,8 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
                             },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF445CC4),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -142,7 +141,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
 
                   const SizedBox(height: 20),
 
-                  // Card Solicitar alteração
+                  // CARD - SOLICITAR ALTERAÇÃO
                   _buildCard(
                     icon: Icons.send,
                     title: "Solicitar alteração",
@@ -187,7 +186,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
 
                   const SizedBox(height: 20),
 
-                  // Card Avisos
+                  // CARD - AVISOS
                   _buildCard(
                     title: "Avisos recentes",
                     content: Text(
@@ -203,24 +202,10 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
               ),
             ),
 
-            // Barra de Navegação Inferior
-            bottomNavigationBar: BottomNavigationBar(
-              backgroundColor: const Color(0xFF445CC4),
-              selectedItemColor: Colors.white,
-              unselectedItemColor: Colors.white70,
-              currentIndex: 1,
-              onTap: _onItemTapped,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.place),
-                  label: "Trajetos",
-                ),
-                BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.group),
-                  label: "Estudantes",
-                ),
-              ],
+            // NAVBAR REUTILIZÁVEL
+            bottomNavigationBar: CustomNavbar(
+              currentIndex: _selectedIndex,
+              onTap: _onNavTap,
             ),
           );
         },
@@ -228,7 +213,7 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
     );
   }
 
-  // Widget do Card Reutilizável
+  // CARD REUTILIZÁVEL
   Widget _buildCard({
     IconData? icon,
     required String title,
@@ -267,7 +252,10 @@ class _HomeEstudanteViewState extends State<HomeEstudanteView> {
 
           content,
 
-          if (button != null) ...[const SizedBox(height: 20), button],
+          if (button != null) ...[
+            const SizedBox(height: 20),
+            button,
+          ],
         ],
       ),
     );

@@ -62,10 +62,12 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
 
           const SizedBox(height: 20),
 
-          // LISTA DE ÔNIBUS - carregada do Firestore
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('onibus').orderBy('dataCadastro', descending: true).snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection('onibus')
+                  .orderBy('dataCadastro', descending: true)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -80,14 +82,20 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
                   itemCount: docs.length,
                   separatorBuilder: (_, __) => const SizedBox(height: 0),
                   itemBuilder: (context, index) {
-                    final data = docs[index].data() as Map<String, dynamic>;
+                    final data =
+                        docs[index].data() as Map<String, dynamic>;
+
                     final placa = (data['placa'] ?? '') as String;
                     final capacidade = (data['capacidade'] ?? '') as String;
                     final tipo = (data['tipo'] ?? '') as String;
+
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 20),
                       child: GestureDetector(
-                        onTap: () => setState(() => _selectedPlaca = placa),
+                        onTap: () {
+                          setState(() => _selectedPlaca = placa);
+                          Navigator.pop(context, placa); // <-- RETORNO
+                        },
                         child: _cardOnibus(
                           placa: placa,
                           capacidade: capacidade,
@@ -107,12 +115,10 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
   }
 
   Future<void> _openCadastro() async {
-    await Navigator.push<Map<String, String>>(
+    await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const OnibusCadastroView()),
     );
-    // The cadastro view now persists directly to Firestore; this view listens
-    // to the Firestore stream and will update automatically.
   }
 
   Widget _cardOnibus({
@@ -136,10 +142,11 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
         ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
-            selecionado ? Icons.radio_button_checked : Icons.circle_outlined,
+            selecionado
+                ? Icons.radio_button_checked
+                : Icons.circle_outlined,
             size: 30,
           ),
           const SizedBox(width: 10),
@@ -148,7 +155,8 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("PLACA:\n$placa", style: const TextStyle(fontSize: 18)),
-                Text("\nCAPAC.: $capacidade", style: const TextStyle(fontSize: 18)),
+                Text("\nCAPAC.: $capacidade",
+                    style: const TextStyle(fontSize: 18)),
                 Text("\nTIPO: $tipo", style: const TextStyle(fontSize: 18)),
               ],
             ),

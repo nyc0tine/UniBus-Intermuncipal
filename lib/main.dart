@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:unibus_intermunicipal/viewmodels/lista_estudante_viewmodel.dart';
 import 'firebase_options.dart';
 
 // ViewModels
@@ -14,6 +15,7 @@ import 'views/home_motorista_view.dart';
 import 'views/lista_estudante_view.dart';
 import 'views/trajetos_motorista_view.dart';
 import 'views/trajetos_estudante_view.dart';
+import 'views/enquete_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +26,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => LoginViewModel()),
         ChangeNotifierProvider(create: (_) => UsuarioViewModel()), // se usar reset de senha
+        ChangeNotifierProvider(create: (_) => ListaEstudanteViewModel()), // se usar reset de senha
       ],
       child: const UniBus(),
     ),
@@ -51,6 +54,7 @@ class UniBus extends StatelessWidget {
         '/trajetosMotorista': (context) => const TrajetosMotoristaView(),
         '/trajetosEstudante': (context) => const TrajetosEstudanteView(),
         '/listaEstudantes': (context) => const ListaEstudanteView(),
+        '/enquete': (context) => const EnqueteView(),
       },
 
       home: const LoginView(),

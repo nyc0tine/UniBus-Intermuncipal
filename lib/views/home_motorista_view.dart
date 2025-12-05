@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../viewmodels/home_motorista_viewmodel.dart';
 import "../views/onibus_cadastrados_view.dart";
+import '../widgets/custom_navbar_motorista.dart';
 
 class HomeMotoristaView extends StatefulWidget {
   const HomeMotoristaView({super.key});
@@ -12,7 +13,19 @@ class HomeMotoristaView extends StatefulWidget {
 }
 
 class _HomeMotoristaViewState extends State<HomeMotoristaView> {
-  int _selectedIndex = 1; // Home selecionada
+  int _selectedIndex = 1;
+
+  void _onNavTap(int index) {
+    setState(() => _selectedIndex = index);
+
+    if (index == 0) {
+      Navigator.pushNamed(context, '/trajetosMotorista');
+    } else if (index == 1) {
+      // já está na home
+    } else if (index == 2) {
+      Navigator.pushNamed(context, '/listaEstudantes');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,30 +34,167 @@ class _HomeMotoristaViewState extends State<HomeMotoristaView> {
       child: Consumer<HomeMotoristaViewModel>(
         builder: (context, vm, _) {
           return Scaffold(
-            backgroundColor: const Color(0xFFE6E8ED),
-            bottomNavigationBar: buildBottomNavigation(),
-            body: Column(
-              children: [
-                buildHeader(vm),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+            backgroundColor: const Color(0xFFE7ECF2),
+
+            body: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // HEADER
+                  Container(
+                    padding: const EdgeInsets.only(top: 60, bottom: 25),
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFF445CC4), Color(0xFF5468D4)],
+                      ),
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(60),
+                      ),
+                    ),
                     child: Column(
                       children: [
-                        cardViagensHoje(vm),
-                        const SizedBox(height: 20),
-                        cardListaPassageiros(vm),
-                        const SizedBox(height: 20),
-                        cardAvisos(vm),
-                        const SizedBox(height: 20),
-                        cardOnibus(vm),
-                        const SizedBox(height: 30),
+                        Text(
+                          "Bom Dia, ${vm.motoristaNome.isNotEmpty ? vm.motoristaNome : 'Motorista'}!",
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        Text(
+                          vm.getDataFormatada(vm.dataSelecionada),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        const SizedBox(height: 10),
+
+                        const Icon(
+                          Icons.notifications_none,
+                          color: Colors.white,
+                          size: 28,
+                        ),
                       ],
                     ),
                   ),
-                ),
-              ],
+
+                  const SizedBox(height: 20),
+
+                  // CARD VIAGENS DE HOJE
+                  _buildCard(
+                    icon: Icons.directions_bus,
+                    title: "Viagens de hoje",
+                    content: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          vm.viagensHoje.isNotEmpty
+                              ? (vm.viagensHoje.first["tipo"] ?? "Viagem")
+                              : "Sem viagem",
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          vm.viagensHoje.isNotEmpty
+                              ? "${vm.viagensHoje.first['passageirosCount']} passageiros"
+                              : "0 passageiros",
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // CARD PASSAGEIROS
+                  _buildCard(
+                    icon: Icons.people,
+                    title: "Lista de passageiros",
+                    content: Text(
+                      "${vm.estudantes.length} passageiros registrados",
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // CARD AVISOS
+                  _buildCard(
+                    icon: Icons.notifications,
+                    title: "Avisos recentes",
+                    content: Text(
+                      vm.avisos.isNotEmpty ? vm.avisos.first : "Nenhum aviso",
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                                    // CARD ÔNIBUS
+                  _buildCard(
+                    icon: Icons.directions_bus_filled_rounded,
+                    title: "Ônibus cadastrados",
+                    content: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Placa selecionada:",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        Text(
+                          vm.motoristaPlaca.isNotEmpty
+                              ? vm.motoristaPlaca
+                              : "Nenhuma selecionada",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    button: ElevatedButton(
+                      onPressed: () async {
+                        final placaSelecionada = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const OnibusCadastradosView(),
+                          ),
+                        );
+
+                        if (placaSelecionada != null) {
+                          vm.setOnibusSelecionado(placaSelecionada);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF445CC4),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        "Gerenciar Ônibus",
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+
+            // 🔥 CUSTOM NAVBAR MOTORISTA
+            bottomNavigationBar: CustomNavbar(
+              currentIndex: _selectedIndex,
+              onTap: _onNavTap,
             ),
           );
         },
@@ -52,252 +202,61 @@ class _HomeMotoristaViewState extends State<HomeMotoristaView> {
     );
   }
 
-  // Header
-  Widget buildHeader(HomeMotoristaViewModel vm) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(top: 50, bottom: 25),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF4F63D2), Color(0xFF3146A1)],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(50),
-          bottomRight: Radius.circular(50),
-        ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            "Bom Dia, ${vm.motoristaNome.isNotEmpty ? vm.motoristaNome : 'Motorista'}!",
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Georgia',
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // LINHA COM SETAS E DATA
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                onPressed: () {
-                  vm.recuarData();
-                },
-              ),
-              Text(
-                vm.getDataFormatada(vm.dataSelecionada),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontFamily: 'Georgia',
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.arrow_forward_ios, color: Colors.white),
-                onPressed: () {
-                  vm.avancarData();
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // card Viagens de Hoje
-  Widget cardViagensHoje(HomeMotoristaViewModel vm) {
-    final viagem = vm.viagensHoje.isNotEmpty ? vm.viagensHoje.first : null;
-    final tipo = viagem != null
-        ? (viagem['tipo'] as String?) ?? 'Viagem'
-        : 'Sem viagem';
-    final passageiros = viagem != null
-        ? (viagem['passageirosCount'] as int?) ?? 0
-        : 0;
-
-    return buildCard(
-      icon: Icons.directions_bus,
-      title: "Viagens de hoje",
-      children: [
-        Text(tipo, style: const TextStyle(fontSize: 17)),
-        const SizedBox(height: 10),
-        Text("$passageiros ALUNOS", style: const TextStyle(fontSize: 17)),
-      ],
-    );
-  }
-
-  // Card Lista de Passageiros
-  Widget cardListaPassageiros(HomeMotoristaViewModel vm) {
-    final contagem = vm.estudantes.length;
-    return buildCard(
-      icon: Icons.list_alt,
-      title: "Lista de passageiros",
-      children: [
-        Text(
-          "$contagem passageiros registrados",
-          style: const TextStyle(fontSize: 17),
-        ),
-      ],
-    );
-  }
-
-  // Card Avisos
-  Widget cardAvisos(HomeMotoristaViewModel vm) {
-    final primeiroAviso = vm.avisos.isNotEmpty ? vm.avisos.first : 'Sem avisos';
-    return buildCard(
-      title: "Avisos recentes",
-      icon: Icons.notifications,
-      children: [
-        Row(
-          children: [
-            const Text("•  ", style: TextStyle(fontSize: 20)),
-            Expanded(
-              child: Text(primeiroAviso, style: const TextStyle(fontSize: 17)),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  // Card Ônibus
-  Widget cardOnibus(HomeMotoristaViewModel vm) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const OnibusCadastradosView()),
-        );
-      },
-      child: buildCard(
-        icon: Icons.directions_bus,
-        title: "Ônibus cadastrados",
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Selecionado:\n${vm.veiculo ?? 'Não especificado'}",
-                style: const TextStyle(fontSize: 17),
-              ),
-              Text(
-                "Placa:\n${vm.motoristaPlaca.isNotEmpty ? vm.motoristaPlaca : 'N/A'}",
-                style: const TextStyle(fontSize: 17),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // COMPONENTE REUTILIZÁVEL DE CARD
-  Widget buildCard({
-    required IconData icon,
+  // --- CARD UNIVERSAL ---
+  Widget _buildCard({
+    IconData? icon,
     required String title,
-    required List<Widget> children,
+    required Widget content,
+    Widget? button,
   }) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFD9D9D9),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(25),
         boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(2, 4)),
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: Offset(2, 4),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 30),
-              const SizedBox(width: 10),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Georgia',
+          if (icon != null)
+            Row(
+              children: [
+                Icon(icon, size: 30, color: const Color(0xFF445CC4)),
+                const SizedBox(width: 10),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+              ],
+            )
+          else
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
               ),
-            ],
-          ),
+            ),
+
           const SizedBox(height: 15),
-          ...children,
-        ],
-      ),
-    );
-  }
 
-  // BOTTOM NAVIGATION
-  Widget buildBottomNavigation() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: const BoxDecoration(
-        color: Color(0xFF4F63D2),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(25),
-          topRight: Radius.circular(25),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          navButton(Icons.location_on, "Trajetos", _selectedIndex == 0),
-          navButton(Icons.home, "Home", _selectedIndex == 1),
-          navButton(Icons.people, "Estudantes", _selectedIndex == 2),
-        ],
-      ),
-    );
-  }
+          content,
 
-  Widget navButton(IconData icon, String label, bool active) {
-    return GestureDetector(
-      onTap: () {
-        // Atualiza estado visual do botão
-        setState(() {
-          if (label == 'Trajetos') {
-            _selectedIndex = 0;
-          } else if (label == 'Home') {
-            _selectedIndex = 1;
-          } else if (label == 'Estudantes') {
-            _selectedIndex = 2;
-          }
-        });
-
-        // Navega para a rota correspondente
-        if (label == 'Estudantes') {
-          Navigator.pushNamed(context, '/listaEstudantes');
-        } else if (label == 'Trajetos') {
-          Navigator.pushNamed(context, '/trjetosMotorista');
-        }
-      },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: active ? Colors.white : Colors.transparent,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              size: 28,
-              color: active ? const Color(0xFF4F63D2) : Colors.white,
-            ),
-          ),
-          const SizedBox(height: 5),
-          Text(label, style: const TextStyle(color: Colors.white)),
+          if (button != null) ...[
+            const SizedBox(height: 15),
+            button,
+          ],
         ],
       ),
     );
