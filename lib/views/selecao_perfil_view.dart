@@ -1,6 +1,7 @@
 // Pop-up de escolha do tipo de perfil: estucante ou motorista
 import 'package:flutter/material.dart';
 
+import 'cadastro_estudante_view.dart';
 import 'cadastro_motorista_view.dart';
 
 class SelecaoPerfilView extends StatelessWidget {
@@ -24,21 +25,27 @@ class SelecaoPerfilView extends StatelessWidget {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 25,
           children: [
             const Text(
               "Como você deseja se cadastrar?",
               style: TextStyle(fontSize: 18),
             ),
+            const SizedBox(height: 25),
 
             // ---------------- BOTÃO ESTUDANTE ----------------
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/listaEstudantes');
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CadastroEstudanteView(),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(minimumSize: const Size(240, 48)),
               child: const Text("Sou Estudante"),
             ),
+            const SizedBox(height: 16),
 
             // ---------------- BOTÃO MOTORISTA ----------------
             ElevatedButton(

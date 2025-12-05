@@ -7,23 +7,18 @@ import 'views/login_view.dart';
 import 'firebase_options.dart';
 
 import 'views/home_estudante_view.dart';
+import 'views/home_motorista_view.dart';
 import 'views/lista_estudante_view.dart';
-
-
-import 'views/trajetos_view.dart'; // se existir
-
+import 'views/trajetos_motorista_view.dart';
+import 'views/trajetos_estudante_view.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => LoginViewModel()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => LoginViewModel())],
       child: const UniBus(),
     ),
   );
@@ -54,7 +49,9 @@ class UniBus extends StatelessWidget {
 
       routes: {
         '/homeEstudante': (context) => const HomeEstudanteView(),
-        '/trajetos': (context) => const TrajetosView(), // coloque sua view real aqui
+        '/homeMotorista': (context) => const HomeMotoristaView(),
+        '/trjetosMotorista': (context) => const TrajetosMotoristaView(),
+        '/trajetosEstudante': (context) => const TrajetosEstudanteView(),
         '/listaEstudantes': (context) => const ListaEstudanteView(),
       },
       home: const LoginView(),
