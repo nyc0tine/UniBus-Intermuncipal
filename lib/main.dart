@@ -8,6 +8,8 @@ import 'firebase_options.dart';
 
 import 'views/home_estudante_view.dart';
 import 'views/lista_estudante_view.dart';
+
+
 import 'views/trajetos_view.dart'; // se existir
 
 
