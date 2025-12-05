@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:unibus_intermunicipal/models/cadastro_motorista_model.dart';
 import 'package:unibus_intermunicipal/viewmodels/cadastro_motorista_viewmodel.dart';
 import 'package:unibus_intermunicipal/views/login_view.dart';
@@ -19,8 +19,30 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
 
-  File? _imagemPerfil;
   final _viewModel = CadastroMotoristaViewModel();
+
+  /// MÁSCARA DE TELEFONE
+  final _telefoneMask = MaskTextInputFormatter(
+    mask: '(##) # ####-####',
+    filter: {"#": RegExp(r'[0-9]')},
+    type: MaskAutoCompletionType.lazy,
+  );
+
+  @override
+  void dispose() {
+    _nomeController.dispose();
+    _emailController.dispose();
+    _placaController.dispose();
+    _telefoneController.dispose();
+    _senhaController.dispose();
+    super.dispose();
+  }
+
+  // Limpeza / normalização
+  String _cleanText(String v) => v.trim();
+  String _cleanPhone(String v) => v.replaceAll(RegExp(r'\D'), '');
+  String _cleanPlaca(String v) =>
+      v.toUpperCase().replaceAll(RegExp(r'[^A-Z0-9]'), '');
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +74,8 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -65,54 +88,8 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  
-                  // Foto do motorista
-                  Center(
-                    child: GestureDetector(
-                      onTap: _selecionarImagem,
-                      child: Container(
-                        height: 240,
-                        width: 180,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            color: const Color(0xFF4C63B6),
-                            width: 2,
-                          ),
-                        ),
-                        child: _imagemPerfil == null
-                            ? Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Icon(
-                                    Icons.upload_file,
-                                    size: 60,
-                                    color: Color(0xFF4C63B6),
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    'Escolher arquivo',
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : ClipRRect(
-                                borderRadius: BorderRadius.circular(13),
-                                child: Image.file(
-                                  _imagemPerfil!,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
 
-                  const SizedBox(height: 30),
+                  // CAMPOS
 
                   _buildInputField('Nome Completo:', _nomeController),
                   const SizedBox(height: 20),
@@ -123,9 +100,38 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                   _buildInputField('Placa:', _placaController),
                   const SizedBox(height: 20),
 
-                  _buildInputField('Telefone:', _telefoneController),
-                  const SizedBox(height: 20),
+                  // TELEFONE COM MÁSCARA
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD9D9D9),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0xFF4C63B6),
+                          offset: Offset(4, 4),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: TextFormField(
+                      controller: _telefoneController,
+                      decoration: const InputDecoration(
+                        labelText: "Telefone",
+                        border: InputBorder.none,
+                        labelStyle: TextStyle(
+                          fontSize: 18,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [_telefoneMask],
+                    ),
+                  ),
 
+                  const SizedBox(height: 20),
                   _buildInputField('Senha:', _senhaController, obscure: true),
                   const SizedBox(height: 30),
 
@@ -139,85 +145,7 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
                         ),
                         elevation: 5,
                       ),
-                      onPressed: () async {
-                        final nome = _nomeController.text.trim();
-                        final email = _emailController.text.trim();
-                        final placa = _placaController.text.trim();
-                        final telefone = _telefoneController.text.trim();
-                        final senha = _senhaController.text;
-
-                        // ---------- VALIDAÇÕES ----------
-                        if (nome.isEmpty ||
-                            email.isEmpty ||
-                            placa.isEmpty ||
-                            telefone.isEmpty ||
-                            senha.isEmpty) {
-                          _showMessage('Por favor, preencha todos os campos.');
-                          return;
-                        }
-
-                        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                        if (!emailRegex.hasMatch(email)) {
-                          _showMessage('Digite um e-mail válido.');
-                          return;
-                        }
-
-                        if (senha.length < 6) {
-                          _showMessage('A senha deve ter pelo menos 6 caracteres.');
-                          return;
-                        }
-
-                        if (telefone.length < 8) {
-                          _showMessage('Digite um telefone válido.');
-                          return;
-                        }
-
-                        if (placa.length < 7) {
-                          _showMessage('Digite uma placa válida.');
-                          return;
-                        }
-
-                        if (_imagemPerfil == null) {
-                          _showMessage('Selecione uma foto do motorista.');
-                          return;
-                        }
-
-                        final motorista = CadastroMotoristaModel(
-                          nome: nome,
-                          email: email,
-                          placa: placa,
-                          telefone: telefone,
-                          senha: senha,
-                        );
-
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (_) => const Center(child: CircularProgressIndicator()),
-                        );
-
-                        try {
-                          final sucesso = await _viewModel.cadastrarMotorista(
-                            motorista,
-                            imagemPerfil: _imagemPerfil,
-                          );
-
-                          Navigator.of(context).pop();
-
-                          if (sucesso) {
-                            _showMessage('Cadastro realizado com sucesso!');
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (_) => const LoginView()),
-                              (route) => false,
-                            );
-                          } else {
-                            _showMessage('Erro ao cadastrar. Verifique os dados.');
-                          }
-                        } catch (e) {
-                          Navigator.of(context).pop();
-                          _showMessage('Erro inesperado: $e');
-                        }
-                      },
+                      onPressed: _onCadastrarPressed,
                       child: const Text(
                         'CADASTRAR',
                         style: TextStyle(
@@ -238,7 +166,8 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
     );
   }
 
-  Widget _buildInputField(String label, TextEditingController controller, {bool obscure = false}) {
+  Widget _buildInputField(String label, TextEditingController controller,
+      {bool obscure = false}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
       decoration: BoxDecoration(
@@ -268,20 +197,66 @@ class _CadastroMotoristaViewState extends State<CadastroMotoristaView> {
     );
   }
 
-  Future<void> _selecionarImagem() async {
+  Future<void> _onCadastrarPressed() async {
+    final nome = _cleanText(_nomeController.text);
+    final email = _cleanText(_emailController.text);
+    final placa = _cleanPlaca(_placaController.text);
+    final telefone = _cleanPhone(_telefoneController.text);
+    final senha = _senhaController.text.trim();
+
+    if (nome.isEmpty ||
+        email.isEmpty ||
+        placa.isEmpty ||
+        telefone.isEmpty ||
+        senha.isEmpty) {
+      _showMessage('Por favor, preencha todos os campos.');
+      return;
+    }
+
+    if (senha.length < 6) {
+      _showMessage('A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    if (telefone.length < 10) {
+      _showMessage('Digite um telefone válido.');
+      return;
+    }
+
+    final motorista = CadastroMotoristaModel(
+      nome: nome,
+      email: email,
+      placa: placa,
+      telefone: telefone,
+      senha: senha,
+    );
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
     try {
-      final result = await FilePicker.platform.pickFiles(type: FileType.image, allowMultiple: false);
-      if (result != null && result.files.isNotEmpty && result.files.first.path != null) {
-        setState(() {
-          _imagemPerfil = File(result.files.first.path!);
-        });
+      final sucesso = await _viewModel.cadastrarMotorista(motorista);
+
+      Navigator.of(context).pop(); // Fecha loading
+
+      if (sucesso) {
+        _showMessage('Cadastro realizado com sucesso!');
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginView()),
+          (route) => false,
+        );
+      } else {
+        _showMessage(_viewModel.ultimoErro ?? 'Erro ao cadastrar.');
       }
     } catch (e) {
-      _showMessage('Erro ao selecionar imagem: $e');
+      Navigator.of(context).pop();
+      _showMessage('Erro inesperado: $e');
     }
   }
 
-  // ---------- Método auxiliar ----------
   void _showMessage(String text) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(text)),
