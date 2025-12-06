@@ -15,15 +15,15 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
   final TextEditingController _numeroController = TextEditingController();
   final TextEditingController _marcaController = TextEditingController();
   final TextEditingController _placaController = TextEditingController();
-  final TextEditingController _tipoController = TextEditingController();
   final TextEditingController _capacidadeController = TextEditingController();
+
+  String? _tipoSelecionado; // <-- VALOR DO DROPDOWN
 
   @override
   void dispose() {
     _numeroController.dispose();
     _marcaController.dispose();
     _placaController.dispose();
-    _tipoController.dispose();
     _capacidadeController.dispose();
     super.dispose();
   }
@@ -65,7 +65,10 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
             _input("Número", _numeroController),
             _input("Marca", _marcaController),
             _input("Placa do Ônibus", _placaController),
-            _input("Tipo", _tipoController),
+
+            // 🔽 DROPDOWN DE TIPO
+            _dropdownTipo(),
+
             _input("Capacidade", _capacidadeController),
 
             const SizedBox(height: 30),
@@ -80,15 +83,15 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
                 final numero = _numeroController.text.trim();
                 final marca = _marcaController.text.trim();
                 final placa = _placaController.text.trim();
-                final tipo = _tipoController.text.trim();
                 final capacidade = _capacidadeController.text.trim();
 
-                if (placa.isEmpty || marca.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Preencha pelo menos Marca e Placa')));
+                if (placa.isEmpty || marca.isEmpty || _tipoSelecionado == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Preencha Marca, Placa e Tipo.')),
+                  );
                   return;
                 }
 
-                // Persistir ônibus no Firestore e navegar para a tela de ônibus cadastrados
                 final busesColl = FirebaseFirestore.instance.collection('onibus');
                 final currentUser = FirebaseAuth.instance.currentUser;
 
@@ -96,7 +99,7 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
                   'numero': numero,
                   'marca': marca,
                   'placa': placa,
-                  'tipo': tipo,
+                  'tipo': _tipoSelecionado,
                   'capacidade': capacidade,
                   'ownerId': currentUser?.uid,
                   'dataCadastro': DateTime.now(),
@@ -106,7 +109,9 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
                     MaterialPageRoute(builder: (_) => const OnibusCadastradosView()),
                   );
                 }).catchError((e) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao salvar ônibus: $e')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro ao salvar ônibus: $e')),
+                  );
                 });
               },
               child: const Text(
@@ -126,6 +131,9 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
     );
   }
 
+  // -------------------------------
+  // INPUT PADRÃO
+  // -------------------------------
   Widget _input(String label, TextEditingController controller) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -140,6 +148,36 @@ class _OnibusCadastroViewState extends State<OnibusCadastroView> {
           labelText: label,
           border: InputBorder.none,
         ),
+      ),
+    );
+  }
+
+  // -------------------------------
+  // DROPDOWN CUSTOMIZADO
+  // -------------------------------
+  Widget _dropdownTipo() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD9D9D9),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: DropdownButtonFormField<String>(
+        value: _tipoSelecionado,
+        decoration: const InputDecoration(
+          labelText: "Tipo",
+          border: InputBorder.none,
+        ),
+        items: const [
+          DropdownMenuItem(value: "Ônibus", child: Text("Ônibus")),
+          DropdownMenuItem(value: "Micro-ônibus", child: Text("Micro-ônibus")),
+        ],
+        onChanged: (value) {
+          setState(() {
+            _tipoSelecionado = value;
+          });
+        },
       ),
     );
   }

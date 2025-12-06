@@ -155,7 +155,7 @@ class _OnibusCadastradosViewState extends State<OnibusCadastradosView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("PLACA:\n$placa", style: const TextStyle(fontSize: 18)),
-                Text("\nCAPAC.: $capacidade",
+                Text("\nCAPACIDADE: $capacidade",
                     style: const TextStyle(fontSize: 18)),
                 Text("\nTIPO: $tipo", style: const TextStyle(fontSize: 18)),
               ],
